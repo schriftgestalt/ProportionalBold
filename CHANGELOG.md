@@ -1,0 +1,20 @@
+# Changelog
+
+## plugin 0.1.2 (bundle version 3) — unreleased, awaiting the Mac run
+- `emboldenFont(font, ratio, master=None, glyphLimit=None)` is the headless entry point; the menu item only adds the dialog.
+- Single 12-argument `GlyphsFilterOffsetCurve` call (declared identically in the Glyphs 3 and 4 SDK stubs); no try/except masking.
+- `MAC_RUNBOOK.md`, `mac/headless_check.py`, `mac/glyphs_remote.py`, `testdata/` for the one-day Mac verification.
+
+## propbold-cli 0.1.2 — release candidate (2026-09-19)
+- TTF output installs on Windows 11 (verified by hand: installer, font viewer family name, CJK
+  rendering at all sizes, app font lists). Root cause of the earlier rejection: no name ID 4.
+- name IDs 1–6 for (3,1,0x409) and (1,0,0); OS/2 copied from source and patched; head.flags 0x000B
+  with lsb == xMin; gasp; vhea/vmtx/GSUB/GPOS/GDEF/BASE copied verbatim.
+- `tests/test_windows_conventions.py` pins the above; `tests/test_large_font.py` builds 65,535 glyphs.
+
+## 0.1.1
+- post format 3.0 for TTF output (format 2.0 overflowed its uint16 name index on 65,535 glyphs).
+- Pipeline split into `embolden_glyphs` / `assemble_ttf`; 65,535-glyph tests.
+
+## 0.1.0
+- First CLI: .glyphs / .ufo / .otf|.ttf input, `--ratio`, parity tests with the Glyphs plugin.

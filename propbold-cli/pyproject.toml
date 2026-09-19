@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "propbold"
+version = "0.1.2"
+description = "Per-glyph proportional emboldening for CJK fonts: Regular -> Bold/Black draft, same rule as the ProportionalBold Glyphs plugin."
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+dependencies = [
+    "fonttools[ufo]>=4.50",
+    "skia-pathops>=0.8",
+    "numpy>=1.20",
+    "glyphsLib>=6.6",
+    "ufoLib2>=0.16",
+]
+
+[project.scripts]
+propbold = "propbold.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["propbold*"]

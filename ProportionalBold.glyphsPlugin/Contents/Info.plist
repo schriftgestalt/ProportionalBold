@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleExecutable</key>
+	<string>plugin</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.ez.ProportionalBold</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>Proportional Bold</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.1.2</string>
+	<key>CFBundleVersion</key>
+	<string>3</string>
+	<key>UpdateFeedURL</key>
+	<string>https://raw.githubusercontent.com/fanzhixiang777/ProportionalBold/main/ProportionalBold.glyphsPlugin/Contents/Info.plist</string>
+	<key>productPageURL</key>
+	<string>https://github.com/fanzhixiang777/ProportionalBold</string>
+	<key>productReleaseNotes</key>
+	<string>Initial release: per-glyph proportional emboldening into a new master.</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright 2026, Ez. MIT License.</string>
+	<key>NSPrincipalClass</key>
+	<string>ProportionalBold</string>
+	<key>PyMainFileNames</key>
+	<array>
+		<string>plugin.py</string>
+	</array>
+</dict>
+</plist>

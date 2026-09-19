@@ -1,0 +1,218 @@
+{
+ "source": "NotoSansCJKtc-Regular-sub415.otf",
+ "ratio": 1.45,
+ "tolerance_units": 3,
+ "glyphs": {
+  "uni4E00": {
+   "char": "一",
+   "otf_name": "cid09481",
+   "regular_bounds": [
+    44.0,
+    349.0,
+    960.0,
+    431.0
+   ],
+   "regular_oncurve_nodes": 3,
+   "stem": 82.0,
+   "offset_d": 18.45,
+   "expected_bold_bounds": [
+    25.5,
+    330.5,
+    978.5,
+    449.5
+   ]
+  },
+  "uni5341": {
+   "char": "十",
+   "otf_name": "cid11655",
+   "regular_bounds": [
+    55.0,
+    -80.0,
+    952.0,
+    839.0
+   ],
+   "regular_oncurve_nodes": 11,
+   "stem": 77.0,
+   "offset_d": 17.32,
+   "expected_bold_bounds": [
+    37.7,
+    -97.3,
+    969.3,
+    856.3
+   ]
+  },
+  "uni65E5": {
+   "char": "日",
+   "otf_name": "cid20220",
+   "regular_bounds": [
+    176.0,
+    -69.0,
+    832.0,
+    772.0
+   ],
+   "regular_oncurve_nodes": 13,
+   "stem": 75.0,
+   "offset_d": 16.88,
+   "expected_bold_bounds": [
+    159.1,
+    -85.9,
+    848.9,
+    788.9
+   ]
+  },
+  "uni570B": {
+   "char": "國",
+   "otf_name": "cid13212",
+   "regular_bounds": [
+    82.0,
+    -83.0,
+    918.0,
+    794.0
+   ],
+   "regular_oncurve_nodes": 44,
+   "stem": 63.4,
+   "offset_d": 14.27,
+   "expected_bold_bounds": [
+    67.7,
+    -97.3,
+    932.3,
+    808.3
+   ]
+  },
+  "uni6C38": {
+   "char": "永",
+   "otf_name": "cid23015",
+   "regular_bounds": [
+    34.0,
+    -78.0,
+    965.0,
+    838.0
+   ],
+   "regular_oncurve_nodes": 27,
+   "stem": 78.8,
+   "offset_d": 17.74,
+   "expected_bold_bounds": [
+    -0.2,
+    -95.7,
+    998.8,
+    858.1
+   ]
+  },
+  "uni4EBA": {
+   "char": "人",
+   "otf_name": "cid09749",
+   "regular_bounds": [
+    43.0,
+    -76.0,
+    965.0,
+    837.0
+   ],
+   "regular_oncurve_nodes": 7,
+   "stem": 92.4,
+   "offset_d": 20.8,
+   "expected_bold_bounds": [
+    2.5,
+    -102.8,
+    1005.4,
+    857.8
+   ]
+  },
+  "uni8A9E": {
+   "char": "語",
+   "otf_name": "cid37861",
+   "regular_bounds": [
+    44.0,
+    -80.0,
+    962.0,
+    844.0
+   ],
+   "regular_oncurve_nodes": 50,
+   "stem": 64.0,
+   "offset_d": 14.4,
+   "expected_bold_bounds": [
+    29.6,
+    -94.4,
+    976.4,
+    862.5
+   ]
+  },
+  "uni81FA": {
+   "char": "臺",
+   "otf_name": "cid33319",
+   "regular_bounds": [
+    61.0,
+    -57.0,
+    941.0,
+    841.0
+   ],
+   "regular_oncurve_nodes": 60,
+   "stem": 50.0,
+   "offset_d": 11.25,
+   "expected_bold_bounds": [
+    49.8,
+    -68.2,
+    952.2,
+    852.2
+   ]
+  },
+  "uni7063": {
+   "char": "灣",
+   "otf_name": "cid24819",
+   "regular_bounds": [
+    36.0,
+    -79.4,
+    954.0,
+    837.0
+   ],
+   "regular_oncurve_nodes": 106,
+   "stem": 46.0,
+   "offset_d": 10.35,
+   "expected_bold_bounds": [
+    19.9,
+    -89.8,
+    966.8,
+    850.6
+   ]
+  },
+  "uni9F9C": {
+   "char": "龜",
+   "otf_name": "cid47478",
+   "regular_bounds": [
+    50.0,
+    -75.0,
+    960.0,
+    845.0
+   ],
+   "regular_oncurve_nodes": 90,
+   "stem": 49.0,
+   "offset_d": 11.02,
+   "expected_bold_bounds": [
+    27.4,
+    -86.0,
+    972.1,
+    857.2
+   ]
+  },
+  "uni9AD4": {
+   "char": "體",
+   "otf_name": "cid45257",
+   "regular_bounds": [
+    43.0,
+    -83.0,
+    960.0,
+    840.0
+   ],
+   "regular_oncurve_nodes": 90,
+   "stem": 54.0,
+   "offset_d": 12.15,
+   "expected_bold_bounds": [
+    25.1,
+    -102.4,
+    972.2,
+    852.2
+   ]
+  }
+ },
+ "median_stem_regular": 63.0,
+ "median_stem_bold_expected": 91.35
+}
