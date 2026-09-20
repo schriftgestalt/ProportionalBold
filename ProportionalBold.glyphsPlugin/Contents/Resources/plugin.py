@@ -147,28 +147,55 @@ class ProportionalBold(GeneralPlugin):
 
 	# ------------------------------------------------------------------ per-glyph
 	@objc.python_method
-	def emboldenLayer(self, srcLayer, ratio):
-		"""Returns (newLayer, info). newLayer is a decomposed, overlap-free copy offset by d_g."""
+	def emboldenLayer(self, srcLayer, ratio, newMasterId=None):
+		"""Returns (newLayer, info). newLayer is a decomposed, overlap-free copy offset by d_g.
+
+		The copy is ATTACHED to the glyph before anything is measured: a detached layer (the result of
+		copy()/copyDecomposedLayer()) reports bounds 0,0,0,0 in Glyphs 3.5, so scan lines placed from
+		its bounds hit nothing and the stem came back None (found with mac/diag_stem.py, 2026-09-20).
+		With newMasterId the copy is attached as that master's layer (where it will live anyway);
+		without it, it is attached temporarily and removed again.
+		A stem measurement that yields None raises, so the caller counts the glyph as failed instead of
+		silently writing an un-emboldened copy."""
+		glyph = srcLayer.parent
 		work = srcLayer.copyDecomposedLayer()
 		work.removeOverlap()
-		w = self.stemWidth(work)
-		if w is None:
-			return work, {"w": None, "d": 0.0}
-		d = (ratio - 1.0) / 2.0 * w
-		d = max(0.0, min(d, D_CAP * w))
-		if BOX_GROWTH < 1.0:
-			b = work.bounds
-			W, H = b.size.width, b.size.height
-			dW = BOX_GROWTH * 2.0 * d
-			sx = max(0.85, min(1.1, (W + dW - 2 * d) / W)) if W > 0 else 1.0
-			sy = max(0.85, min(1.1, (H + dW - 2 * d) / H)) if H > 0 else 1.0
-			cx, cy = b.origin.x + W / 2.0, b.origin.y + H / 2.0
-			work.applyTransform([sx, 0.0, 0.0, sy, cx * (1 - sx), cy * (1 - sy)])
-		self.offsetLayer(work, d)
-		work.removeOverlap()
-		work.correctPathDirection()
-		work.width = srcLayer.width
-		return work, {"w": w, "d": d}
+		temporary = False
+		if newMasterId:
+			work.layerId = newMasterId
+			work.associatedMasterId = newMasterId
+			glyph.layers[newMasterId] = work
+			work = glyph.layers[newMasterId]
+		else:
+			glyph.layers.append(work)
+			temporary = True
+		try:
+			w = self.stemWidth(work)
+			if w is None:
+				b = work.bounds
+				raise ValueError("stem measurement returned nothing (bounds %.0f,%.0f %.0fx%.0f, %d paths)"
+								 % (b.origin.x, b.origin.y, b.size.width, b.size.height, len(work.paths)))
+			d = (ratio - 1.0) / 2.0 * w
+			d = max(0.0, min(d, D_CAP * w))
+			if BOX_GROWTH < 1.0:
+				b = work.bounds
+				W, H = b.size.width, b.size.height
+				dW = BOX_GROWTH * 2.0 * d
+				sx = max(0.85, min(1.1, (W + dW - 2 * d) / W)) if W > 0 else 1.0
+				sy = max(0.85, min(1.1, (H + dW - 2 * d) / H)) if H > 0 else 1.0
+				cx, cy = b.origin.x + W / 2.0, b.origin.y + H / 2.0
+				work.applyTransform([sx, 0.0, 0.0, sy, cx * (1 - sx), cy * (1 - sy)])
+			self.offsetLayer(work, d)
+			work.removeOverlap()
+			work.correctPathDirection()
+			work.width = srcLayer.width
+			return work, {"w": w, "d": d}
+		finally:
+			if temporary:
+				try:
+					glyph.layers.remove(work)
+				except Exception:
+					pass
 
 	# ------------------------------------------------------------------ whole font (no UI) — also the headless entry point
 	@objc.python_method
@@ -207,11 +234,8 @@ class ProportionalBold(GeneralPlugin):
 					skipped += 1
 					continue
 				try:
-					newLayer, info = self.emboldenLayer(srcLayer, ratio)
-					newLayer.layerId = newId
-					newLayer.associatedMasterId = newId
-					glyph.layers[newId] = newLayer
-					glyph.layers[newId].userData["proportionalBold"] = {
+					newLayer, info = self.emboldenLayer(srcLayer, ratio, newMasterId=newId)
+					newLayer.userData["proportionalBold"] = {
 						"ratio": ratio, "stem": info["w"], "offset": info["d"]}
 					if info["w"]:
 						stems.append(info["w"])

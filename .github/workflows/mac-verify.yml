@@ -1,4 +1,4 @@
-name: mac-verify (stage 2 – Glyphs 3 on macos-latest)
+name: mac-verify (stage 3 – Glyphs 3 on macos-latest, real checks)
 
 on:
   workflow_dispatch:
@@ -34,20 +34,34 @@ jobs:
             echo "$k = $(defaults read "$APP/Contents/Info.plist" $k)" | tee -a mac/log/02-installed.txt
           done
 
-      - name: Framework Python 3.11 + PyObjC + glyphs-cli
-        timeout-minutes: 6
+      - name: Python for Glyphs = the official Plugin Manager module (GlyphsPythonPlugin, py311) + glyphs-cli
+        timeout-minutes: 8
         continue-on-error: true
         run: |
-          brew install python@3.11 2>&1 | tail -3
-          PY=/opt/homebrew/opt/python@3.11/bin/python3.11
-          PYFW=/opt/homebrew/opt/python@3.11/Frameworks/Python.framework
-          echo "PY=$PY" >> "$GITHUB_ENV"; echo "PYFW=$PYFW" >> "$GITHUB_ENV"
-          $PY -m pip install --break-system-packages -q pyobjc-core pyobjc-framework-Cocoa pyobjc-framework-Quartz glyphs-cli
-          $PY -m pip install --break-system-packages -q -e ./propbold-cli 2>&1 | tail -2 || echo "propbold-cli install failed (diag step will skip the CLI reference)"
-          $PY -c "import objc, AppKit, Foundation; print('pyobjc', objc.__version__)" | tee mac/log/03-python.txt
-          G=$(find /opt/homebrew -type f -perm -u+x -name glyphs 2>/dev/null | head -1)
+          # This is exactly what Plugin Manager > Modules > Python installs for Glyphs 3 builds 3161-3799:
+          # the repo schriftgestalt/GlyphsPythonPlugin, branch py311, cloned into the Repositories folder.
+          # It ships a relocatable Python.framework 3.11 with PyObjC 10.2 already inside.
+          REPOS="$HOME/Library/Application Support/Glyphs 3/Repositories"
+          mkdir -p "$REPOS"
+          git clone -q --depth 1 --branch py311 https://github.com/schriftgestalt/GlyphsPythonPlugin "$REPOS/GlyphsPythonPlugin" 2>&1 | tail -2
+          GPY="$REPOS/GlyphsPythonPlugin/Python.framework"
+          if [ -x "$GPY/Versions/3.11/bin/python3.11" ]; then
+            echo "using the Glyphs Python module at $GPY" | tee mac/log/03-python.txt
+          else
+            echo "module clone failed, falling back to Homebrew python@3.11" | tee mac/log/03-python.txt
+            brew install python@3.11 2>&1 | tail -2
+            GPY=/opt/homebrew/opt/python@3.11/Frameworks/Python.framework
+          fi
+          PY="$GPY/Versions/3.11/bin/python3.11"
+          echo "GPY=$GPY" >> "$GITHUB_ENV"; echo "PY=$PY" >> "$GITHUB_ENV"
+          "$PY" -m pip --version 2>/dev/null || "$PY" -m ensurepip --upgrade 2>&1 | tail -1
+          "$PY" -m pip install -q --break-system-packages pyobjc-core pyobjc-framework-Cocoa pyobjc-framework-Quartz glyphs-cli 2>&1 | tail -2 || "$PY" -m pip install -q pyobjc-core pyobjc-framework-Cocoa pyobjc-framework-Quartz glyphs-cli 2>&1 | tail -2
+          "$PY" -m pip install -q --break-system-packages -e ./propbold-cli 2>&1 | tail -2 || "$PY" -m pip install -q -e ./propbold-cli 2>&1 | tail -2 || echo "propbold-cli install failed (diag step will skip the CLI reference)"
+          "$PY" -c "import objc, AppKit, Foundation, sys; print('python', sys.version.split()[0], 'pyobjc', objc.__version__)" | tee -a mac/log/03-python.txt
+          G="$GPY/Versions/3.11/bin/glyphs"; [ -x "$G" ] || G=$(find "$GPY" /opt/homebrew -type f -perm -u+x -name glyphs 2>/dev/null | head -1)
           echo "GLYPHS_CLI=$G" >> "$GITHUB_ENV"; echo "glyphs-cli at: $G" | tee -a mac/log/03-python.txt
           "$G" --version 2>&1 | tee -a mac/log/03-python.txt || true
+          ls "$REPOS" | tee -a mac/log/03-python.txt
 
       - name: Install the plugin bundle for the GUI app
         timeout-minutes: 1
@@ -57,8 +71,9 @@ jobs:
           mkdir -p "$d"; rm -rf "$d/ProportionalBold.glyphsPlugin"
           cp -R ProportionalBold.glyphsPlugin "$d/"
           xattr -dr com.apple.quarantine "$d/ProportionalBold.glyphsPlugin" || true
-          # framework Python for the GUI app too (same key the CLI reads)
-          defaults write com.GeorgSeifert.Glyphs3 GSPythonFrameworkPath -string "$PYFW"
+          # select the module's framework for the GUI app (the key Settings > Addons > Python version writes)
+          defaults write com.GeorgSeifert.Glyphs3 GSPythonFrameworkPath -string "$GPY"
+          defaults read com.GeorgSeifert.Glyphs3 GSPythonFrameworkPath | tee mac/log/04-python-pref.txt
           # Sparkle-style keys: harmless if Glyphs ignores them, suppress the first-run update prompt if it honours them
           defaults write com.GeorgSeifert.Glyphs3 SUEnableAutomaticChecks -bool NO
           defaults write com.GeorgSeifert.Glyphs3 SUHasLaunchedBefore -bool YES
@@ -205,7 +220,7 @@ jobs:
           sleep 1
           screencapture -x mac/log/21-filter-menu.png || true
           T 15 osascript -e 'tell application "System Events" to key code 53' || true
-          grep -n -i -E "proportional|traceback|error" mac/log/glyphs3-launch.log | head -40 > mac/log/22-launch-log-grep.txt || true
+          grep -n -i -E "python|proportional|traceback|error|principal|plugin" mac/log/glyphs3-launch.log | head -60 > mac/log/22-launch-log-grep.txt || true
 
       - name: Quit Glyphs 3
         timeout-minutes: 1
@@ -226,7 +241,7 @@ jobs:
           PROPBOLD_REPO: ${{ github.workspace }}
         run: |
           T() { perl -e 'alarm shift @ARGV; exec @ARGV' "$@"; }
-          T 420 "$GLYPHS_CLI" run --app "$APP" --python "$PYFW/Versions/3.11/Python" --plugins ./ProportionalBold.glyphsPlugin mac/headless_check.py 2>&1 | tee mac/log/30-headless-cli.txt
+          T 420 "$GLYPHS_CLI" run --app "$APP" --python "$GPY/Versions/3.11/Python" --plugins ./ProportionalBold.glyphsPlugin mac/headless_check.py 2>&1 | tee mac/log/30-headless-cli.txt
           ls -la mac/log/ | tee mac/log/31-listing.txt
           grep -E "^(PASS|FAIL|SKIP|RESULT|MODE)" mac/log/30-headless-cli.txt || true
 
@@ -237,13 +252,13 @@ jobs:
           PROPBOLD_REPO: ${{ github.workspace }}
         run: |
           T() { perl -e 'alarm shift @ARGV; exec @ARGV' "$@"; }
-          T 200 "$GLYPHS_CLI" run --app "$APP" --python "$PYFW/Versions/3.11/Python" --plugins ./ProportionalBold.glyphsPlugin mac/diag_stem.py 2>&1 | grep -v Bugsnag | tee mac/log/40-diag-stem.txt
+          T 200 "$GLYPHS_CLI" run --app "$APP" --python "$GPY/Versions/3.11/Python" --plugins ./ProportionalBold.glyphsPlugin mac/diag_stem.py 2>&1 | grep -v Bugsnag | tee mac/log/40-diag-stem.txt
 
       - name: Upload screenshots, logs and results JSON
         if: always()
         timeout-minutes: 3
         uses: actions/upload-artifact@v4
         with:
-          name: mac-verify-stage2-${{ github.run_id }}
+          name: mac-verify-stage3-${{ github.run_id }}
           path: mac/log
           if-no-files-found: warn
