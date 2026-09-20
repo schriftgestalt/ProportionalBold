@@ -1,6 +1,10 @@
 """propbold-compare — measure a plugin-made master against the CLI's own output on the same file.
 
-    propbold-compare <font-with-two-masters.glyphs> [--ratio 1.45] [--gt DesignerBold.otf] [--json out.json]
+    propbold-compare <font-with-two-masters.glyphs> [--ratio 1.45] [--gt DesignerBold.otf] [--json out.json] [--report report.txt]
+
+--report writes the reference-free hand-work list (no designer weight needed): every glyph whose
+counter count dropped from the source master to the output master, and every glyph that used the
+fallback stem. This is the report delivered with the service.
 
 Master 0 is the source, the last master is the plugin's output. For every glyph with paths:
   IoU(plugin, CLI)          — the two engines on identical outlines; tips are a negligible area, so this
@@ -44,6 +48,7 @@ def main(argv=None):
     ap.add_argument("--ratio", type=float, default=DEFAULT_RATIO)
     ap.add_argument("--gt", help="designer-drawn target weight (OTF/TTF) for the counter statistics")
     ap.add_argument("--json", help="write per-glyph rows here")
+    ap.add_argument("--report", help="write the reference-free hand-work list (counters lost, fallback stems) as text")
     a = ap.parse_args(argv)
 
     import glyphsLib
@@ -118,9 +123,45 @@ def main(argv=None):
     if a.json:
         with open(a.json, "w", encoding="utf-8") as fh:
             json.dump(rows, fh, ensure_ascii=False, indent=1, default=float)
+    if a.report:
+        write_report(a.report, a.font, src, out, a.ratio, ok, fallback)
     bad = len(low) > 0 or v.mean() < 0.99
     print("RESULT", "FAIL" if bad else "PASS", "agreement plugin vs CLI")
     return 1 if bad else 0
+
+
+def _char(u):
+    try:
+        return chr(u) if u else ""
+    except (ValueError, OverflowError):
+        return ""
+
+
+def write_report(path, font_path, src, out, ratio, rows, fallback):
+    """Plain-text hand-work list: where to start by hand, in the output master."""
+    lost = [r for r in rows if r["counters_plugin"] < r["counters_src"]]
+    fb = [r for r in rows if r["fallback_plugin"]]
+    lines = []
+    lines.append("Proportional Bold — hand-work report")
+    lines.append("file: %s" % font_path)
+    lines.append("source master: %s    output master: %s    ratio %.2f" % (src.name, out.name, ratio))
+    lines.append("glyphs with outlines: %d" % len(rows))
+    lines.append("")
+    lines.append("1. Counters lost — %d glyphs have fewer enclosed counters in the output than in the source. Start here." % len(lost))
+    for r in sorted(lost, key=lambda r: (r["counters_src"] - r["counters_plugin"], r["name"]), reverse=True):
+        lines.append("   %-12s U+%04X %s  counters %d -> %d  stem %s  offset %s" % (
+            r["name"], r["unicode"] or 0, _char(r["unicode"]), r["counters_src"], r["counters_plugin"],
+            "%.1f" % r["stem_plugin"] if r["stem_plugin"] else "-", "%.1f" % r["offset_plugin"] if r["offset_plugin"] else "-"))
+    lines.append("")
+    lines.append("2. Fallback stem — %d glyphs had no measurable stem and were offset with the font's median stem (%s). Check their weight." % (
+        len(fb), "%.1f" % fallback if fallback else "n/a"))
+    for r in sorted(fb, key=lambda r: r["name"]):
+        lines.append("   %-12s U+%04X %s  offset %s" % (r["name"], r["unicode"] or 0, _char(r["unicode"]), "%.1f" % r["offset_plugin"] if r["offset_plugin"] else "-"))
+    lines.append("")
+    lines.append("Everything else was emboldened by (%.2f - 1) / 2 x its own measured stem. Junctions and stroke spacing are not treated: review dense glyphs anyway." % ratio)
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(lines) + "\n")
+    print("report: %d counters-lost glyphs, %d fallback glyphs -> %s" % (len(lost), len(fb), path))
 
 
 if __name__ == "__main__":

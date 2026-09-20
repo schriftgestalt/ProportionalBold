@@ -1,0 +1,94 @@
+Proportional Bold — hand-work report
+file: /home/claude/runs/35503951963/g3/propbold-check-cli-3532.glyphs
+source master: Regular    output master: Regular PropBold 1.45    ratio 1.45
+glyphs with outlines: 413
+
+1. Counters lost — 83 glyphs have fewer enclosed counters in the output than in the source. Start here.
+   cid30501     U+7C72 籲  counters 7 -> 2  stem 50.0  offset 11.2
+   cid12991     U+568D 嚍  counters 6 -> 1  stem 54.0  offset 12.2
+   cid47422     U+9F7B 齻  counters 5 -> 1  stem 54.0  offset 12.2
+   cid46887     U+9E9F 麟  counters 5 -> 1  stem 56.3  offset 12.7
+   cid31967     U+7F79 罹  counters 5 -> 1  stem 58.0  offset 13.1
+   cid28211     U+77C3 矃  counters 6 -> 2  stem 57.0  offset 12.8
+   cid45871     U+9C23 鰣  counters 7 -> 4  stem 56.0  offset 12.6
+   cid45493     U+9B40 魀  counters 4 -> 1  stem 59.0  offset 13.3
+   cid45257     U+9AD4 體  counters 6 -> 3  stem 54.0  offset 12.2
+   cid45205     U+9AC0 髀  counters 5 -> 2  stem 62.0  offset 13.9
+   cid45115     U+9A97 骗  counters 4 -> 1  stem 59.0  offset 13.3
+   cid44966     U+9A37 騷  counters 5 -> 2  stem 59.0  offset 13.3
+   cid44101     U+985C 顜  counters 4 -> 1  stem 59.0  offset 13.3
+   cid42901     U+95A6 閦  counters 4 -> 1  stem 57.0  offset 12.8
+   cid38866     U+8CD9 賙  counters 5 -> 2  stem 61.0  offset 13.7
+   cid33228     U+81CF 臏  counters 5 -> 2  stem 55.0  offset 12.4
+   cid32505     U+8077 職  counters 4 -> 1  stem 60.0  offset 13.5
+   cid28766     U+791F 礟  counters 4 -> 1  stem 58.0  offset 13.1
+   cid25419     U+719A 熚  counters 5 -> 2  stem 60.0  offset 13.5
+   cid17320     U+5F5F 彟  counters 4 -> 1  stem 56.0  offset 12.6
+   cid11508     U+52F4 勴  counters 4 -> 1  stem 55.0  offset 12.4
+   cid47219     U+9F2C 鼬  counters 4 -> 2  stem 60.0  offset 13.5
+   cid46137     U+9CD4 鳔  counters 7 -> 5  stem 57.0  offset 12.8
+   cid46127     U+9CCA 鳊  counters 4 -> 2  stem 57.0  offset 12.8
+   cid44818     U+99DE 駞  counters 3 -> 1  stem 60.0  offset 13.5
+   cid44496     U+992B 餫  counters 5 -> 3  stem 58.0  offset 13.1
+   cid43894     U+97D9 韙  counters 4 -> 2  stem 55.0  offset 12.4
+   cid42878     U+9599 閙  counters 3 -> 1  stem 57.0  offset 12.8
+   cid42873     U+9596 閖  counters 4 -> 2  stem 58.0  offset 13.1
+   cid41116     U+91A1 醡  counters 4 -> 2  stem 58.5  offset 13.2
+   cid38012     U+8AE5 諥  counters 5 -> 3  stem 60.0  offset 13.5
+   cid36487     U+87D5 蟕  counters 3 -> 1  stem 54.0  offset 12.2
+   cid36400     U+87A4 螤  counters 3 -> 1  stem 60.0  offset 13.5
+   cid28252     U+77D9 矙  counters 4 -> 2  stem 58.0  offset 13.1
+   cid27383     U+75E9 痩  counters 3 -> 1  stem 59.0  offset 13.3
+   cid26181     U+733C 猼  counters 3 -> 1  stem 62.0  offset 13.9
+   cid20304     U+661D 昝  counters 3 -> 1  stem 63.0  offset 14.2
+   cid13110     U+56CD 囍  counters 6 -> 4  stem 53.0  offset 11.9
+   cid13013     U+569C 嚜  counters 3 -> 1  stem 54.0  offset 12.2
+   cid47551     U+9FD8 鿘  counters 3 -> 2  stem 61.0  offset 13.7
+   cid45963     U+9C4E 鱎  counters 8 -> 7  stem 55.7  offset 12.5
+   cid45864     U+9C1F 鰟  counters 6 -> 5  stem 58.0  offset 13.1
+   cid44726     U+99A4 馤  counters 2 -> 1  stem 60.0  offset 13.5
+   cid44507     U+992F 餯  counters 3 -> 2  stem 63.0  offset 14.2
+   cid44182     U+9897 颗  counters 4 -> 3  stem 64.0  offset 14.4
+   cid43748     U+978B 鞋  counters 3 -> 2  stem 65.0  offset 14.6
+   cid39954     U+8F86 辆  counters 2 -> 1  stem 64.0  offset 14.4
+   cid39784     U+8F22 輢  counters 4 -> 3  stem 61.0  offset 13.7
+   cid39728     U+8F00 輀  counters 2 -> 1  stem 57.0  offset 12.8
+   cid39155     U+8DA5 趥  counters 3 -> 2  stem 57.0  offset 12.8
+   cid37419     U+89BA 覺  counters 3 -> 2  stem 46.0  offset 10.3
+   cid37362     U+8996 視  counters 3 -> 2  stem 64.8  offset 14.6
+   cid36552     U+87FB 蟻  counters 2 -> 1  stem 55.0  offset 12.4
+   cid36522     U+87E7 蟧  counters 2 -> 1  stem 56.0  offset 12.6
+   cid36226     U+8745 蝅  counters 2 -> 1  stem 61.0  offset 13.7
+   cid33369     U+8211 舑  counters 2 -> 1  stem 67.0  offset 15.1
+   cid32627     U+80B5 肵  counters 2 -> 1  stem 70.0  offset 15.8
+   cid31944     U+7F6B 罫  counters 3 -> 2  stem 61.0  offset 13.7
+   cid31839     U+7F34 缴  counters 3 -> 2  stem 63.0  offset 14.2
+   cid31771     U+7EF0 绰  counters 2 -> 1  stem 66.5  offset 15.0
+   cid31633     U+7E88 纈  counters 4 -> 3  stem 61.0  offset 13.7
+   cid29732     U+7B08 笈  counters 2 -> 1  stem 69.0  offset 15.5
+   cid28415     U+7842 硂  counters 2 -> 1  stem 68.0  offset 15.3
+   cid27697     U+7682 皂  counters 2 -> 1  stem 61.0  offset 13.7
+   cid26862     U+74D5 瓕  counters 3 -> 2  stem 52.0  offset 11.7
+   cid21491     U+68F8 棸  counters 3 -> 2  stem 64.0  offset 14.4
+   cid20389     U+6658 晘  counters 3 -> 2  stem 67.0  offset 15.1
+   cid20372     U+664B 晋  counters 3 -> 2  stem 65.0  offset 14.6
+   cid20184     U+65D4 旔  counters 2 -> 1  stem 61.0  offset 13.7
+   cid20083     U+65A2 斢  counters 5 -> 4  stem 59.0  offset 13.3
+   cid14577     U+5A0C 娌  counters 2 -> 1  stem 66.0  offset 14.8
+   cid14418     U+59CC 姌  counters 2 -> 1  stem 67.0  offset 15.1
+   cid13882     U+58B9 墹  counters 4 -> 3  stem 62.0  offset 13.9
+   cid13853     U+58A6 墦  counters 2 -> 1  stem 63.0  offset 14.2
+   cid13675     U+5844 塄  counters 3 -> 2  stem 67.0  offset 15.1
+   cid13591     U+580C 堌  counters 2 -> 1  stem 67.0  offset 15.1
+   cid13408     U+5794 垔  counters 2 -> 1  stem 61.0  offset 13.7
+   cid12619     U+55BD 喽  counters 2 -> 1  stem 66.6  offset 15.0
+   cid11078     U+51D9 凙  counters 3 -> 2  stem 60.0  offset 13.5
+   cid10639     U+50DA 僚  counters 3 -> 2  stem 65.0  offset 14.6
+   cid10375     U+504A 偊  counters 2 -> 1  stem 63.3  offset 14.2
+   cid10298     U+501F 借  counters 3 -> 2  stem 65.0  offset 14.6
+   cid10234     U+4FFC 俼  counters 2 -> 1  stem 65.5  offset 14.7
+
+2. Fallback stem — 1 glyphs had no measurable stem and were offset with the font's median stem (65.0). Check their weight.
+   cid00015     U+002E .  offset 14.6
+
+Everything else was emboldened by (1.45 - 1) / 2 x its own measured stem. Junctions and stroke spacing are not treated: review dense glyphs anyway.

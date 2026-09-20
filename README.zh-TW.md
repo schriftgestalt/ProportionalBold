@@ -17,7 +17,7 @@ Glyphs 3 與 Glyphs 4 的外掛。你只給一個數字——目標筆畫比例�
 | | 本外掛 | 單一 Offset Curve 值 |
 |---|---|---|
 | 與設計師 Bold 的 IoU，412 字 | 0.831 | 0.829 |
-| counter 被封死（比設計師少）的字，412 字 | 18.4 % | 22.1 % |
+| 設計師保留而這裡被封死的 counter，出現在幾成字裡，412 字 | 18.4 % | 22.1 % |
 | 同上，318 個 CJK 漢字 | 23.9 % | 28.6 % |
 
 也就是：整體吻合度與單一外推值相同，密集字 counter 糊掉的比例少了大約六分之一。沒有比這更強的說法。設計師仍然要重畫交叉處、重新分配筆畫間距、逐字修密集字；這個外掛省的是第一遍。
@@ -45,20 +45,22 @@ Glyphs 3.5（build 3532）與 Glyphs 4.1（build 4107），GitHub Actions 的 ma
 
 ## 命令列
 
-`propbold`（0.2.0）在 Glyphs 之外套用同一條規則，Windows、macOS、Linux 皆可：`.glyphs` 進 → 同一個檔加一個母版、`.ufo` → 新 UFO、`.otf`/`.ttf` → 新的 TrueType 字型。`propbold-compare` 把外掛做的母版與命令列輸出對照。
+`propbold`（0.2.0）在 Glyphs 之外套用同一條規則，Windows、macOS、Linux 皆可：`.glyphs` 進 → 同一個檔加一個母版、`.ufo` → 新 UFO、`.otf`/`.ttf` → 新的 TrueType 字型。`propbold-compare` 把外掛做的母版與命令列輸出對照；`--report` 不需要任何參考字重，直接列出手修清單（封死的 counter、替代筆寬）。
 
     pip install "git+https://github.com/fanzhixiang777/ProportionalBold.git#subdirectory=propbold-cli"
     propbold NotoSansCJKtc-Regular.otf --ratio 1.45
 
-TTF 輸出在 Windows 11 安裝已用 0.1.2 驗證；0.2.0 的重新驗證待辦（[propbold-cli/WINDOWS_CHECK.md](propbold-cli/WINDOWS_CHECK.md)）。細節：[propbold-cli/README.md](propbold-cli/README.md)。
+TTF 輸出已在 Windows 11 驗證（2026-09-20，propbold 0.2.0：65,535 字 541 秒、ots 通過、可安裝、Word 列出並正常渲染——[mac/results/windows-0.2.0.md](mac/results/windows-0.2.0.md)）。細節：[propbold-cli/README.md](propbold-cli/README.md)。
 
 ## 代工服務
 
-不想自己跑也可以：把 Regular 母版寄來，我用這套工具做出 Bold 或 Black 的草稿母版，並依上面的數據逐字檢查後交回。每一套字重 NT$20,000。先免費做 50 個字的樣本，你親眼看過再決定要不要付費。來信 proportionalbold@gmail.com。
+不想自己跑也可以：把 Regular 母版寄來，我用這套工具做出 Bold 或 Black 的草稿母版交回，並附一份清單，列出 counter 被封死或改用替代筆寬的每一個字，讓你知道從哪裡開始手修。每一套字重 NT$20,000（約 US$620）。先免費做你挑的 50 個字當樣本，親眼看過再決定要不要付費。你的檔案只用於這件工作，交件後刪除。來信 proportionalbold@gmail.com。
 
-If you would rather not run it yourself: send a Regular master and I return the Bold or Black draft master prepared with this tool, checked glyph by glyph against the numbers above. NT$20,000 per weight set. A 50-glyph sample comes first, free, so you can judge it by eye before paying. Write to proportionalbold@gmail.com.
+If you would rather not run it yourself: send a Regular master and I return the Bold or Black draft master made with this tool, plus a report listing every glyph that lost a counter or used the fallback stem, so you know where to start by hand. NT$20,000 (about US$620) per weight set. A free sample of 50 glyphs of your choice comes first, so you can judge it by eye before paying. Your files are used only for this job and deleted after delivery. Write to proportionalbold@gmail.com.
 
-ご自身で実行されない場合はこちらへ。Regular マスターをお送りいただければ、このツールで Bold または Black の下書きマスターを作成し、上記の数値に照らして一字ずつ確認してお返しします。ウェイト一式につき NT$20,000 です。まず 50 字のサンプルを無料でお作りしますので、目でご確認のうえご判断ください。連絡先は proportionalbold@gmail.com。
+ご自身で実行されない場合は、Regular マスターをお送りいただければ、このツールで作成した Bold または Black の下書きマスターと、カウンターが閉じたグリフや代替ステム幅を使ったグリフをすべて列挙したレポートをお返しします — どこから手作業を始めるべきかが分かります。ウェイト一式につき NT$20,000（約 US$620）です。まず、お選びいただいた 50 字のサンプルを無料でお作りしますので、目でご確認のうえお支払いをご判断ください。お預かりしたファイルはこの作業にのみ使用し、納品後に削除します。連絡先は proportionalbold@gmail.com です。
+
+清單由 `propbold-compare --report` 產生；驗證那一輪的範例：[docs/report-example.txt](docs/report-example.txt)。
 
 ## 授權
 

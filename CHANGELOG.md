@@ -1,5 +1,7 @@
 # Changelog
 
+## propbold-cli 0.2.0 — Windows 11 verified 2026-09-20 (65,535 glyphs in 541 s, ots clean, installs, Word renders); `propbold-compare --report` writes the reference-free hand-work list
+
 ## plugin 1.0.0 (bundle 6) — 2026-09-20
 - First release considered verified: Glyphs 3.5 (3532) and Glyphs 4.1 (4107) on GitHub Actions macOS runners, GUI and headless
   (run 35503951963): plugin loads, menu item present, 413/415 test glyphs emboldened, 1 fallback, 0 failed, output identical
