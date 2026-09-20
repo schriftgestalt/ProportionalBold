@@ -95,3 +95,20 @@ def test_offset_amount():
     assert abs(info["offset"] - 18.0) < 0.01
     x0, y0, x1, y1 = out.bounds
     assert abs((x1 - x0) - 116.0) < 0.5          # 80 + 2 * 18
+
+
+def test_fallback_policy():
+    """A glyph with too few ink runs has no stem: unchanged without a fallback, offset by the fallback with one."""
+    dot = _rect(100, 100, 140, 140)
+    out, info = core.proportional_bold(dot, 1.45)
+    assert info["stem"] is None and info["offset"] == 0.0 and out.bounds == dot.bounds
+    out, info = core.proportional_bold(dot, 1.45, fallback_stem=60.0)
+    assert info["fallback"] is True and abs(info["offset"] - 13.5) < 0.01
+    x0, y0, x1, y1 = out.bounds
+    assert abs((x1 - x0) - (40 + 27)) < 0.5
+
+
+def test_miter_limit_keeps_right_angles_square():
+    out, info = core.proportional_bold(_rect(0, 0, 80, 700), 1.45)
+    x0, y0, x1, y1 = out.bounds
+    assert abs((x1 - x0) - 116.0) < 0.5 and abs((y1 - y0) - 736.0) < 0.5   # corners still reach the full miter

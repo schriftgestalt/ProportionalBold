@@ -186,19 +186,27 @@ def main():
     t0 = time.time()
     r = plugin.emboldenFont(font, RATIO, master=src, log=out)
     secs = time.time() - t0
-    check("1.no_failures", r["failed"] == 0, "done %d skipped %d failed %d %s" % (r["done"], r["skipped"], r["failed"], r["failures"][:5]))
+    check("1.no_failures", r["failed"] == 0, "done %d fallback %d skipped %d failed %d %s" % (r["done"], r.get("fallback", 0), r["skipped"], r["failed"], r["failures"][:5]))
+    check("1.fallback_rare", r.get("fallback", 0) <= max(2, 0.02 * (r["done"] + r.get("fallback", 0))),
+          "%d unmeasurable glyphs given the median stem: %s" % (r.get("fallback", 0), r.get("fallbackGlyphs", [])[:10]))
     check("1.median_stem", abs(r["medianStem"] - exp["median_stem_regular"]) <= 2, "%.1f vs expected %.1f" % (r["medianStem"], exp["median_stem_regular"]))
     newId = r["masterId"]
-    tol = exp["tolerance_units"]
-    bad = []
+    # Offset amount, measured the same way on the emboldened layer: bold stem / regular stem must be ~ratio.
+    # (Bounds were dropped as a metric: sharp diagonal tips differ between Glyphs' Offset Curve and any
+    # pathops miter limit by up to 35 units while the area agrees to 1%; propbold-compare does IoU outside.)
+    lo, hi = exp.get("bold_stem_ratio_range", [1.38, 1.56])
+    off = []
     for u, e in exp["glyphs"].items():
         g = glyph_by_unicode(font, u)
         if g is None:
-            bad.append((u, "missing")); continue
-        got = bounds_list(g.layers[newId])
-        if max(abs(a - c) for a, c in zip(got, e["expected_bold_bounds"])) > tol:
-            bad.append((e["char"], [round(v, 1) for v in got], e["expected_bold_bounds"]))
-    check("1.bounds_match_cli", not bad, "tolerance %d units; mismatches: %s" % (tol, bad[:4]))
+            off.append((u, "missing")); continue
+        wb = plugin.stemWidth(g.layers[newId])
+        wr = plugin.stemWidth(g.layers[src.id])
+        if not wb or not wr:
+            off.append((e["char"], "unmeasurable", wr, wb)); continue
+        if not (lo <= wb / wr <= hi):
+            off.append((e["char"], round(wr, 1), round(wb, 1), round(wb / wr, 3)))
+    check("1.stem_after_offset", not off, "bold/regular stem within [%.2f, %.2f] for %d glyphs; off: %s" % (lo, hi, len(exp["glyphs"]), off[:4]))
     rounded = []
     for u in reg_nodes:
         g = glyph_by_unicode(font, u)

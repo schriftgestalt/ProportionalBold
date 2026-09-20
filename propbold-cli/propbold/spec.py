@@ -13,3 +13,8 @@ N_LINES = 24
 MAX_RUN_FRAC = 0.35
 D_CAP = 0.6
 BOX_GROWTH = 1.0
+MITER_LIMIT = 1.5        # CLI only (pathops stroke join). Glyphs' Offset Curve cuts sharp diagonal tips short;
+                         # 1.5 is the closest pathops reproduction that still keeps 90-degree corners square
+                         # (a right angle needs >= 1.414). Fitted on real plugin output, 2026-09-20.
+# Unmeasurable glyphs (tiny dots, marks: fewer than 6 ink runs) get the font's median stem as a
+# FALLBACK stem, counted separately as "fallback" — never as done with d = 0, never silently.

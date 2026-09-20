@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pathops
 from fontTools.pens.recordingPen import DecomposingRecordingPen
-from .spec import PCT, N_LINES, MAX_RUN_FRAC, D_CAP, BOX_GROWTH
+from .spec import PCT, N_LINES, MAX_RUN_FRAC, D_CAP, BOX_GROWTH, MITER_LIMIT
 
 
 # ------------------------------------------------------------------ input
@@ -89,25 +89,32 @@ def stem_width(path):
 
 
 # ------------------------------------------------------------------ offset
-def dilate(path, d):
-    """Offset outward by d: fill ∪ stroke(width 2d, miter joins). Result is overlap-free."""
+def dilate(path, d, miter_limit=MITER_LIMIT):
+    """Offset outward by d: fill ∪ stroke(width 2d, miter joins, MITER_LIMIT). Result is overlap-free."""
     if d <= 0:
         return pathops.Path(path)
     s = pathops.Path(path)
-    s.stroke(2 * d, pathops.LineCap.BUTT_CAP, pathops.LineJoin.MITER_JOIN, 4.0)
+    s.stroke(2 * d, pathops.LineCap.BUTT_CAP, pathops.LineJoin.MITER_JOIN, miter_limit)
     s.convertConicsToQuads()
     u = pathops.op(path, s, pathops.PathOp.UNION)
     u.simplify()
     return u
 
 
-def proportional_bold(path, ratio):
-    """Return (new_path, info) with d = (ratio-1)/2 * stem, capped at D_CAP * stem."""
+def proportional_bold(path, ratio, fallback_stem=None):
+    """Return (new_path, info) with d = (ratio-1)/2 * stem, capped at D_CAP * stem.
+    info["stem"] is the measured stem, or None; if None and fallback_stem is given, the fallback is
+    used and info["fallback"] is True. With no stem and no fallback the path is returned unchanged
+    (offset 0) — the caller must count that as a failure, not as done."""
     p = pathops.Path(path)
     p.simplify()
     w = stem_width(p)
+    fallback = False
     if w is None:
-        return p, {"stem": None, "offset": 0.0}
+        if not fallback_stem:
+            return p, {"stem": None, "offset": 0.0, "fallback": False}
+        w = float(fallback_stem)
+        fallback = True
     d = max(0.0, min((ratio - 1.0) / 2.0 * w, D_CAP * w))
     if BOX_GROWTH < 1.0:
         x0, y0, x1, y1 = p.bounds
@@ -119,4 +126,4 @@ def proportional_bold(path, ratio):
         p = p.transform(sx, 0, 0, sy, cx * (1 - sx), cy * (1 - sy))
     out = dilate(p, d)
     out.convertConicsToQuads()
-    return out, {"stem": w, "offset": d}
+    return out, {"stem": w, "offset": d, "fallback": fallback}

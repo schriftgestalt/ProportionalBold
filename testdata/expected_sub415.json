@@ -1,7 +1,12 @@
 {
- "source": "NotoSansCJKtc-Regular-sub415.otf",
+ "source": "NotoSansCJKtc-Regular-sub415.otf (identical outlines in the .glyphs copy)",
  "ratio": 1.45,
  "tolerance_units": 3,
+ "bold_stem_ratio_range": [
+  1.38,
+  1.56
+ ],
+ "note": "expected_bold_bounds are the CLI's (pathops, MITER_LIMIT 1.5) for reference only; the in-Glyphs check uses bold_stem_ratio_range, the cross-engine check is propbold-compare (IoU)",
  "glyphs": {
   "uni4E00": {
    "char": "一",
@@ -92,9 +97,9 @@
    "stem": 78.8,
    "offset_d": 17.74,
    "expected_bold_bounds": [
-    -0.2,
+    24.5,
     -95.7,
-    998.8,
+    976.7,
     858.1
    ]
   },
@@ -111,9 +116,9 @@
    "stem": 92.4,
    "offset_d": 20.8,
    "expected_bold_bounds": [
-    2.5,
+    31.1,
     -102.8,
-    1005.4,
+    977.6,
     857.8
    ]
   },
@@ -168,7 +173,7 @@
    "stem": 46.0,
    "offset_d": 10.35,
    "expected_bold_bounds": [
-    19.9,
+    28.1,
     -89.8,
     966.8,
     850.6
@@ -187,7 +192,7 @@
    "stem": 49.0,
    "offset_d": 11.02,
    "expected_bold_bounds": [
-    27.4,
+    44.2,
     -86.0,
     972.1,
     857.2
@@ -206,8 +211,8 @@
    "stem": 54.0,
    "offset_d": 12.15,
    "expected_bold_bounds": [
-    25.1,
-    -102.4,
+    33.0,
+    -91.2,
     972.2,
     852.2
    ]

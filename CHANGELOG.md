@@ -18,3 +18,12 @@
 
 ## 0.1.0
 - First CLI: .glyphs / .ufo / .otf|.ttf input, `--ratio`, parity tests with the Glyphs plugin.
+
+## plugin 0.1.4 / propbold-cli 0.2.0 — stage 4 (2026-09-20)
+- Unmeasurable glyphs (fewer than 6 ink runs) get the font's median stem as a fallback, counted as
+  `fallback` — never as done, never as an offset of 0 (plugin: `NoStem` + second phase; CLI: two passes).
+- CLI `MITER_LIMIT = 1.5`: closest pathops reproduction of Glyphs' short diagonal tips that keeps right angles square.
+- In-Glyphs bounds check replaced by `1.stem_after_offset` (bold stem / regular stem in [1.38, 1.56]);
+  cross-engine agreement is `propbold-compare` (IoU plugin vs CLI, counters vs the designer's weight), workflow step 50.
+- Real plugin output (Glyphs 3.5 build 3532, 413 glyphs): IoU plugin vs CLI 0.993; vs designer Bold, CJK: IoU 0.855,
+  counters closed 23.9 % (plugin) vs 28.6 % (single global offset).

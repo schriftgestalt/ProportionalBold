@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy
 import uuid
 from glyphsLib import GSFont, GSLayer
-from .core import path_from_glyphset, proportional_bold
+from .core import path_from_glyphset, proportional_bold, stem_width
 
 
 class _MasterGlyphSet:
@@ -39,7 +39,20 @@ def process_glyphs(src_path, dst_path, ratio, log=print):
         pass
     font.masters.append(new)
     gset = _MasterGlyphSet(font, src.id)
+    # pass 1: stems, median = fallback for unmeasurable glyphs
+    measured = []
+    for glyph in font.glyphs:
+        try:
+            p = path_from_glyphset(gset, glyph.name)
+            w = stem_width(p) if p.bounds is not None else None
+            if w:
+                measured.append(w)
+        except Exception:
+            pass
+    measured.sort()
+    fallback = measured[len(measured) // 2] if measured else None
     stems, n = [], 0
+    counts = {"done": 0, "fallback": 0, "failed": 0, "fallback_glyphs": []}
     for i, glyph in enumerate(font.glyphs):
         srcLayer = glyph.layers[src.id]
         newLayer = GSLayer()
@@ -54,16 +67,25 @@ def process_glyphs(src_path, dst_path, ratio, log=print):
                 log(f"  ! {glyph.name}: {e!r} — empty layer written")
                 p = None
             if p is not None and p.bounds is not None:
-                out, info = proportional_bold(p, ratio)
-                out.draw(newLayer.getPen())
-                newLayer.userData["proportionalBold"] = {k: v for k, v in (("ratio", ratio), ("stem", info["stem"]), ("offset", info["offset"])) if v is not None}
-                if info["stem"]:
-                    stems.append(info["stem"])
+                out, info = proportional_bold(p, ratio, fallback_stem=fallback)
+                if info["stem"] is None:
+                    log(f"  ! {glyph.name}: no stem and no fallback — copied unchanged"); counts["failed"] += 1
+                    p.draw(newLayer.getPen())
+                else:
+                    out.draw(newLayer.getPen())
+                    newLayer.userData["proportionalBold"] = {k: v for k, v in (("ratio", ratio), ("stem", info["stem"]), ("offset", info["offset"]), ("fallback", info["fallback"] or None)) if v is not None}
+                    if info["fallback"]:
+                        counts["fallback"] += 1; counts["fallback_glyphs"].append(glyph.name)
+                    else:
+                        counts["done"] += 1; stems.append(info["stem"])
                 n += 1
         glyph.layers.append(newLayer)
         if i and i % 2000 == 0:
             log(f"  {i} glyphs…")
+    if counts["fallback"]:
+        log(f"  fallback stem {fallback:.1f} used for {counts['fallback']} unmeasurable glyphs: {counts['fallback_glyphs'][:20]}")
     font.save(dst_path)
     stems.sort()
     med = stems[len(stems) // 2] if stems else 0
-    return {"glyphs": n, "median_stem": med, "median_stem_out": med * ratio, "master": new.name}
+    return {"glyphs": n, "median_stem": med, "median_stem_out": med * ratio, "master": new.name,
+            "done": counts["done"], "fallback": counts["fallback"], "failed": counts["failed"]}

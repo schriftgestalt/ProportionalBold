@@ -43,7 +43,7 @@ def out_font(tmp_path_factory):
     src_path = tmp_path_factory.mktemp("src") / "src.ttf"
     fb.save(str(src_path))
     src = TTFont(str(src_path))
-    glyphs, metrics, _ = embolden_glyphs(src, 1.45, log=lambda *a: None)
+    glyphs, metrics, _, _ = embolden_glyphs(src, 1.45, log=lambda *a: None)
     dst = tmp_path_factory.mktemp("dst") / "src-propbold145.ttf"
     assemble_ttf(src, glyphs, metrics, 1.45, str(dst))
     return str(dst), src

@@ -43,7 +43,8 @@ def main(argv=None):
     else:
         ap.error("input must be .glyphs, .ufo, .otf or .ttf")
     info = run(src, dst, a.ratio, log=print)
-    print(f"done in {time.time() - t0:.0f}s: {info['glyphs']} glyphs, median stem {info['median_stem']:.0f} -> {info['median_stem_out']:.0f} units")
+    print(f"done in {time.time() - t0:.0f}s: {info['glyphs']} glyphs ({info.get('done', 0)} measured, {info.get('fallback', 0)} with fallback stem, "
+          f"{info.get('failed', 0)} failed), median stem {info['median_stem']:.0f} -> {info['median_stem_out']:.0f} units")
     print(f"wrote {dst}")
     return 0
 

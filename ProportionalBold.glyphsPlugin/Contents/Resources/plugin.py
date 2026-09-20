@@ -36,6 +36,12 @@ MAX_RUN_FRAC = 0.35         # ignore ink runs longer than this fraction of the b
 D_CAP = 0.6                 # never offset more than 0.6 × stem (safety for tiny/odd glyphs)
 BOX_GROWTH = 1.0            # 1.0 = plain offset. <1.0 shrinks the skeleton so the bbox grows only
                             # BOX_GROWTH × 2d (Canon US5959634 style). Measured on Noto: 1.0 fits best.
+# Unmeasurable glyphs (tiny dots, marks: fewer than 6 ink runs) get the font's median measured stem
+# as a FALLBACK stem, counted separately as "fallback" — never as done, never as an offset of 0.
+
+
+class NoStem(ValueError):
+	"""The scan lines found fewer than 6 ink runs — a dot, a tiny mark, an empty-looking glyph."""
 
 
 class ProportionalBold(GeneralPlugin):
@@ -147,16 +153,17 @@ class ProportionalBold(GeneralPlugin):
 
 	# ------------------------------------------------------------------ per-glyph
 	@objc.python_method
-	def emboldenLayer(self, srcLayer, ratio, newMasterId=None):
+	def emboldenLayer(self, srcLayer, ratio, newMasterId=None, fallbackStem=None):
 		"""Returns (newLayer, info). newLayer is a decomposed, overlap-free copy offset by d_g.
+		info["fallback"] is True when the glyph could not be measured and fallbackStem was used.
 
 		The copy is ATTACHED to the glyph before anything is measured: a detached layer (the result of
 		copy()/copyDecomposedLayer()) reports bounds 0,0,0,0 in Glyphs 3.5, so scan lines placed from
 		its bounds hit nothing and the stem came back None (found with mac/diag_stem.py, 2026-09-20).
 		With newMasterId the copy is attached as that master's layer (where it will live anyway);
 		without it, it is attached temporarily and removed again.
-		A stem measurement that yields None raises, so the caller counts the glyph as failed instead of
-		silently writing an un-emboldened copy."""
+		A stem measurement that yields None raises NoStem (a ValueError) unless fallbackStem is given,
+		so the caller counts the glyph as failed or fallback instead of silently writing an un-emboldened copy."""
 		glyph = srcLayer.parent
 		work = srcLayer.copyDecomposedLayer()
 		work.removeOverlap()
@@ -171,10 +178,14 @@ class ProportionalBold(GeneralPlugin):
 			temporary = True
 		try:
 			w = self.stemWidth(work)
+			fallback = False
 			if w is None:
-				b = work.bounds
-				raise ValueError("stem measurement returned nothing (bounds %.0f,%.0f %.0fx%.0f, %d paths)"
+				if not fallbackStem:
+					b = work.bounds
+					raise NoStem("stem measurement returned nothing (bounds %.0f,%.0f %.0fx%.0f, %d paths)"
 								 % (b.origin.x, b.origin.y, b.size.width, b.size.height, len(work.paths)))
+				w = float(fallbackStem)
+				fallback = True
 			d = (ratio - 1.0) / 2.0 * w
 			d = max(0.0, min(d, D_CAP * w))
 			if BOX_GROWTH < 1.0:
@@ -189,7 +200,7 @@ class ProportionalBold(GeneralPlugin):
 			work.removeOverlap()
 			work.correctPathDirection()
 			work.width = srcLayer.width
-			return work, {"w": w, "d": d}
+			return work, {"w": w, "d": d, "fallback": fallback}
 		finally:
 			if temporary:
 				try:
@@ -224,6 +235,7 @@ class ProportionalBold(GeneralPlugin):
 		font.masters.append(newMaster)
 		newId = newMaster.id
 		done, skipped, failed, failures, stems = 0, 0, 0, [], []
+		deferred = []                      # (glyph, srcLayer) with no measurable stem: get the median afterwards
 		font.disableUpdateInterface()
 		try:
 			for i, glyph in enumerate(font.glyphs):
@@ -237,21 +249,43 @@ class ProportionalBold(GeneralPlugin):
 					newLayer, info = self.emboldenLayer(srcLayer, ratio, newMasterId=newId)
 					newLayer.userData["proportionalBold"] = {
 						"ratio": ratio, "stem": info["w"], "offset": info["d"]}
-					if info["w"]:
-						stems.append(info["w"])
+					stems.append(info["w"])
 					done += 1
+				except NoStem:
+					deferred.append((glyph, srcLayer))
 				except Exception:
 					failed += 1
 					failures.append(glyph.name)
 					log("Proportional Bold: failed on %s\n%s" % (glyph.name, traceback.format_exc()))
 				if i and i % 500 == 0:
 					log("Proportional Bold: %d glyphs, %.0fs" % (i, time.time() - t0))
+			# second phase: unmeasurable glyphs get the median stem of the measured ones
+			stems.sort()
+			med = stems[len(stems) // 2] if stems else 0
+			fallback, fallbackGlyphs = 0, []
+			for glyph, srcLayer in deferred:
+				if not med:
+					failed += 1
+					failures.append(glyph.name)
+					log("Proportional Bold: %s has no measurable stem and the font has no median stem either" % glyph.name)
+					continue
+				try:
+					newLayer, info = self.emboldenLayer(srcLayer, ratio, newMasterId=newId, fallbackStem=med)
+					newLayer.userData["proportionalBold"] = {
+						"ratio": ratio, "stem": info["w"], "offset": info["d"], "fallback": True}
+					fallback += 1
+					fallbackGlyphs.append(glyph.name)
+				except Exception:
+					failed += 1
+					failures.append(glyph.name)
+					log("Proportional Bold: failed on %s (fallback)\n%s" % (glyph.name, traceback.format_exc()))
+			if fallback:
+				log("Proportional Bold: fallback stem %.1f used for %d unmeasurable glyphs: %s" % (med, fallback, fallbackGlyphs[:20]))
 		finally:
 			font.enableUpdateInterface()
-		stems.sort()
-		med = stems[len(stems) // 2] if stems else 0
-		return {"master": newMaster.name, "masterId": newId, "done": done, "skipped": skipped, "failed": failed,
-				"failures": failures[:50], "medianStem": med, "medianStemOut": med * ratio, "seconds": time.time() - t0}
+		return {"master": newMaster.name, "masterId": newId, "done": done, "fallback": fallback, "fallbackGlyphs": fallbackGlyphs[:50],
+				"skipped": skipped, "failed": failed, "failures": failures[:50],
+				"medianStem": med, "medianStemOut": med * ratio, "seconds": time.time() - t0}
 
 	# ------------------------------------------------------------------ menu entry
 	def run_(self, sender):
@@ -263,10 +297,10 @@ class ProportionalBold(GeneralPlugin):
 			if ratio is None:
 				return
 			r = self.emboldenFont(font, ratio)
-			msg = ("Master “%s” created in %.0f s.\n%d glyphs emboldened, %d empty skipped, %d failed.\n"
+			msg = ("Master “%s” created in %.0f s.\n%d glyphs emboldened, %d unmeasurable glyphs given the median stem, %d empty skipped, %d failed.\n"
 				   "Median stem: %.0f → %.0f units (per-glyph offset = (ratio−1)/2 × own stem).\n"
 				   "This is a draft master: check junctions and dense glyphs, then edit as usual."
-				   % (r["master"], r["seconds"], r["done"], r["skipped"], r["failed"], r["medianStem"], r["medianStemOut"]))
+				   % (r["master"], r["seconds"], r["done"], r["fallback"], r["skipped"], r["failed"], r["medianStem"], r["medianStemOut"]))
 			print("Proportional Bold: " + msg.replace("\n", " "))
 			Glyphs.showNotification("Proportional Bold", "Master “%s” created (%d glyphs)." % (r["master"], r["done"]))
 			alert = NSAlert.alloc().init()

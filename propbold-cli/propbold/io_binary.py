@@ -21,7 +21,7 @@ from fontTools.ttLib import TTFont, newTable
 from fontTools.fontBuilder import FontBuilder
 from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools.pens.cu2quPen import Cu2QuPen
-from .core import path_from_glyphset, proportional_bold
+from .core import path_from_glyphset, proportional_bold, stem_width
 
 MAX_GLYPHS = 65535   # maxp.numGlyphs is uint16
 COPY_TABLES = ("vhea", "vmtx", "GSUB", "GPOS", "GDEF", "BASE")
@@ -42,13 +42,30 @@ def _glyph_order(src, max_glyphs=None):
     return order
 
 
+def measure_stems(gs, order, log=print):
+    """Pass 1: stem per glyph (None when unmeasurable). Returns (stems dict, median of the measured)."""
+    stems = {}
+    for name in order:
+        try:
+            p = path_from_glyphset(gs, name)
+            stems[name] = stem_width(p) if p.bounds is not None else None
+        except Exception:
+            stems[name] = None
+    measured = sorted(v for v in stems.values() if v)
+    median = measured[len(measured) // 2] if measured else None
+    log(f"  stems: {len(measured)} measured, {len(order) - len(measured)} unmeasurable/empty, median {median}")
+    return stems, median
+
+
 def embolden_glyphs(src, ratio, log=print, max_glyphs=None):
     """Run the rule over every glyph of an open TTFont.
-    Returns (glyphs: name -> TTGlyph, metrics: name -> (advance, lsb), stems: list)."""
+    Returns (glyphs: name -> TTGlyph, metrics: name -> (advance, lsb), stems: list, counts: dict)."""
     gs = src.getGlyphSet()
     order = _glyph_order(src, max_glyphs)
     hmtx = src["hmtx"]
+    stems_all, fallback = measure_stems(gs, order, log=log)
     glyphs, metrics, stems = {}, {}, []
+    counts = {"done": 0, "fallback": 0, "empty": 0, "failed": 0, "fallback_glyphs": [], "failed_glyphs": []}
     t0 = time.time()
     for i, name in enumerate(order):
         adv, lsb = hmtx[name]
@@ -57,12 +74,20 @@ def embolden_glyphs(src, ratio, log=print, max_glyphs=None):
             p = path_from_glyphset(gs, name)
             if p.bounds is None:
                 glyphs[name] = TTGlyphPen(None).glyph()
+                counts["empty"] += 1
             else:
-                out, info = proportional_bold(p, ratio)
+                out, info = proportional_bold(p, ratio, fallback_stem=fallback)
                 glyphs[name] = _tt_glyph(out)
-                if info["stem"]:
+                if info["stem"] is None:
+                    counts["failed"] += 1; counts["failed_glyphs"].append(name)
+                    log(f"  ! {name}: no stem and no fallback — copied unchanged")
+                elif info["fallback"]:
+                    counts["fallback"] += 1; counts["fallback_glyphs"].append(name)
+                else:
+                    counts["done"] += 1
                     stems.append(info["stem"])
         except Exception as e:  # keep the source glyph on failure
+            counts["failed"] += 1; counts["failed_glyphs"].append(name)
             log(f"  ! {name}: {e!r} — copied unchanged")
             p = path_from_glyphset(gs, name)
             out = p if p.bounds else None
@@ -78,7 +103,9 @@ def embolden_glyphs(src, ratio, log=print, max_glyphs=None):
         if i and i % 2000 == 0:
             el = time.time() - t0
             log(f"  {i}/{len(order)} glyphs, {el:.0f}s elapsed, ~{el / i * (len(order) - i):.0f}s left")
-    return glyphs, metrics, stems
+    if counts["fallback"]:
+        log(f"  fallback stem {fallback:.1f} used for {counts['fallback']} unmeasurable glyphs: {counts['fallback_glyphs'][:20]}")
+    return glyphs, metrics, stems, counts
 
 
 def weight_class(ratio):
@@ -179,11 +206,12 @@ def assemble_ttf(src, glyphs, metrics, ratio, dst_path, max_glyphs=None):
 
 def process_binary(src_path, dst_path, ratio, log=print):
     src = TTFont(src_path)
-    glyphs, metrics, stems = embolden_glyphs(src, ratio, log=log)
+    glyphs, metrics, stems, counts = embolden_glyphs(src, ratio, log=log)
     assemble_ttf(src, glyphs, metrics, ratio, dst_path)
     stems.sort()
     med = stems[len(stems) // 2] if stems else 0
-    return {"glyphs": len(glyphs), "median_stem": med, "median_stem_out": med * ratio}
+    return {"glyphs": len(glyphs), "median_stem": med, "median_stem_out": med * ratio,
+            "done": counts["done"], "fallback": counts["fallback"], "empty": counts["empty"], "failed": counts["failed"]}
 
 
 def _family(font):
