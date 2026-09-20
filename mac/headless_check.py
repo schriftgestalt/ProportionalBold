@@ -192,21 +192,31 @@ def main():
     check("1.median_stem", abs(r["medianStem"] - exp["median_stem_regular"]) <= 2, "%.1f vs expected %.1f" % (r["medianStem"], exp["median_stem_regular"]))
     newId = r["masterId"]
     # Offset amount, measured the same way on the emboldened layer: bold stem / regular stem must be ~ratio.
-    # (Bounds were dropped as a metric: sharp diagonal tips differ between Glyphs' Offset Curve and any
-    # pathops miter limit by up to 35 units while the area agrees to 1%; propbold-compare does IoU outside.)
+    # Measured on the REOPENED file (CHECK 2), not in memory: right after the batch, Glyphs' intersection
+    # cache still holds the pre-offset paths for some layers (run 35503159425: 一十日國 came back at 1.00 in
+    # memory while the saved file had 1.44-1.46). Bounds were dropped as a metric: sharp diagonal tips differ
+    # between Glyphs' Offset Curve and any pathops miter limit by up to 35 units while the area agrees to 1%;
+    # propbold-compare does the cross-engine IoU outside Glyphs.
     lo, hi = exp.get("bold_stem_ratio_range", [1.38, 1.56])
-    off = []
-    for u, e in exp["glyphs"].items():
-        g = glyph_by_unicode(font, u)
-        if g is None:
-            off.append((u, "missing")); continue
-        wb = plugin.stemWidth(g.layers[newId])
-        wr = plugin.stemWidth(g.layers[src.id])
-        if not wb or not wr:
-            off.append((e["char"], "unmeasurable", wr, wb)); continue
-        if not (lo <= wb / wr <= hi):
-            off.append((e["char"], round(wr, 1), round(wb, 1), round(wb / wr, 3)))
-    check("1.stem_after_offset", not off, "bold/regular stem within [%.2f, %.2f] for %d glyphs; off: %s" % (lo, hi, len(exp["glyphs"]), off[:4]))
+    newId = r["masterId"]
+
+    def stem_ratios(fontobj, srcId):
+        off, seen = [], []
+        for u, e in exp["glyphs"].items():
+            g = glyph_by_unicode(fontobj, u)
+            if g is None:
+                off.append((u, "missing")); continue
+            wb = plugin.stemWidth(g.layers[newId])
+            wr = plugin.stemWidth(g.layers[srcId])
+            if not wb or not wr:
+                off.append((e["char"], "unmeasurable", wr, wb)); continue
+            seen.append((e["char"], round(wb / wr, 3)))
+            if not (lo <= wb / wr <= hi):
+                off.append((e["char"], round(wr, 1), round(wb, 1), round(wb / wr, 3)))
+        return off, seen
+
+    off_mem, seen_mem = stem_ratios(font, src.id)
+    out("INFO  1.stem_after_offset_in_memory  %s  (informational: stale intersection cache is expected here)" % (seen_mem,))
     rounded = []
     for u in reg_nodes:
         g = glyph_by_unicode(font, u)
@@ -246,10 +256,14 @@ def main():
     ok = re is not None and len(re.masters) == n_masters_before + 1 and all(g.layers[re.masters[-1].id] is not None for g in re.glyphs)
     check("2.save_reopen", ok, "saved %s; masters %s; axes %s" % (saved, len(re.masters) if re else "n/a", ax))
     if re is not None:
+        off, seen = stem_ratios(re, re.masters[0].id)
+        check("1.stem_after_offset", not off, "reopened file: bold/regular stem within [%.2f, %.2f] for %d glyphs; %s; off: %s" % (lo, hi, len(exp["glyphs"]), seen, off[:4]))
         try:
             re.close()
         except Exception:
             pass
+    else:
+        check("1.stem_after_offset", False, "could not reopen the saved file")
 
     # CHECK 3 — U3: timing, extrapolated from the 415-glyph run to 65,535 glyphs
     per = secs / max(r["done"] + r["skipped"], 1)

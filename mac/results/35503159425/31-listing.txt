@@ -1,0 +1,26 @@
+total 11512
+drwxr-xr-x  25 runner  staff      800 Sep 20 09:46 .
+drwxr-xr-x   6 runner  staff      192 Sep 20 09:45 ..
+-rw-r--r--   1 runner  staff        0 Sep 20 09:45 .keep
+-rw-r--r--   1 runner  staff       78 Sep 20 09:45 00-sysinfo.txt
+-rw-r--r--@  1 runner  staff    80937 Sep 20 09:45 01-desktop.png
+-rw-r--r--   1 runner  staff      102 Sep 20 09:45 02-installed.txt
+-rw-r--r--   1 runner  staff      325 Sep 20 09:45 03-python.txt
+-rw-r--r--   1 runner  staff      181 Sep 20 09:45 04-plugins-folder.txt
+-rw-r--r--   1 runner  staff      100 Sep 20 09:45 04-python-pref.txt
+-rw-r--r--@  1 runner  staff   255352 Sep 20 09:45 10-launched.png
+-rw-r--r--   1 runner  staff      315 Sep 20 09:45 11-ui-rounds.txt
+-rw-r--r--@  1 runner  staff   190085 Sep 20 09:45 12-round-1.png
+-rw-r--r--@  1 runner  staff   190085 Sep 20 09:45 12-round-2.png
+-rw-r--r--   1 runner  staff       13 Sep 20 09:45 13-windows-final.txt
+-rw-r--r--@  1 runner  staff   190166 Sep 20 09:45 14-after-dialogs.png
+-rw-r--r--   1 runner  staff      240 Sep 20 09:45 20-filter-menu.txt
+-rw-r--r--@  1 runner  staff   207168 Sep 20 09:45 21-filter-menu.png
+-rw-r--r--   1 runner  staff      109 Sep 20 09:45 22-launch-log-grep.txt
+-rw-r--r--   1 runner  staff     6846 Sep 20 09:45 23-defaults-glyphs3.txt
+-rw-r--r--   1 runner  staff       20 Sep 20 09:46 24-process-after-quit.txt
+-rw-r--r--   1 runner  staff  2475981 Sep 20 09:46 30-headless-cli.txt
+-rw-r--r--   1 runner  staff     1290 Sep 20 09:46 check-cli-3532.log
+-rw-r--r--   1 runner  staff      417 Sep 20 09:45 glyphs3-launch.log
+-rw-r--r--@  1 runner  staff  1555448 Sep 20 09:46 propbold-check-cli-3532.glyphs
+-rw-r--r--   1 runner  staff     2049 Sep 20 09:46 results-cli-3532.json
