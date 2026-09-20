@@ -1,0 +1,19 @@
+Using Glyphs 3.5 (3532)
+Using Python 3.11
+MODE cli  Glyphs 3.5 (3532.0)  Python 3.11.9  repo /Users/runner/work/ProportionalBold/ProportionalBold
+PASS  0.plugin_class_loaded  class found (loaded by Glyphs)
+SKIP  0.menu_item  GUI-only (no Glyphs.menu under glyphs-cli); the workflow reads the Filter menu with System Events instead
+PASS  0.testfont_open  NotoSansCJKtc-Regular-sub415.glyphs: 415 glyphs
+Proportional Bold: fallback stem 65.0 used for 1 unmeasurable glyphs: ['cid00015']
+PASS  1.no_failures  done 413 fallback 1 skipped 1 failed 0 []
+PASS  1.fallback_rare  1 unmeasurable glyphs given the median stem: ['cid00015']
+PASS  1.median_stem  65.0 vs expected 63.0
+INFO  1.stem_after_offset_in_memory  [('一', 1.0), ('十', 1.0), ('日', 1.0), ('國', 1.0), ('永', 0.965), ('人', 0.951), ('語', 1.0), ('臺', 1.0), ('灣', 0.998), ('龜', 1.0), ('體', 1.0)]  (informational: stale intersection cache is expected here)
+PASS  1.corners_not_rounded  on-curve nodes regular -> bold: unchanged within 30%
+PASS  2.master_added  masters 1 -> 2, ids distinct True
+PASS  2.layers_have_paths  new-master layers without paths: 0 []
+PASS  2.save_reopen  saved /Users/runner/work/ProportionalBold/ProportionalBold/mac/log/propbold-check-cli-3532.glyphs; masters 2; axes 100.0 -> 100.0
+PASS  1.stem_after_offset  reopened file: bold/regular stem within [1.38, 1.56] for 11 glyphs; [('一', 1.439), ('十', 1.442), ('日', 1.453), ('國', 1.458), ('永', 1.405), ('人', 1.496), ('語', 1.438), ('臺', 1.44), ('灣', 1.45), ('龜', 1.449), ('體', 1.463)]; off: []
+PASS  3.timing  5.3s for 414 glyphs -> 12.8 ms/glyph -> ~14 min for 65,535 (limit 30)
+RESULT  pass=11 fail=0 skip=1
+wrote /Users/runner/work/ProportionalBold/ProportionalBold/mac/log/results-cli-3532.json

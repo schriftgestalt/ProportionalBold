@@ -1,4 +1,4 @@
-name: mac-verify (stage 4 – Glyphs 3 on macos-latest, fallback + cross-engine IoU)
+name: mac-verify (stage 5 – Glyphs 3 and Glyphs 4 on macos-latest)
 
 on:
   workflow_dispatch:
@@ -270,5 +270,318 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mac-verify-stage4-${{ github.run_id }}
+          path: mac/log
+          if-no-files-found: warn
+
+  glyphs4:
+    runs-on: macos-latest
+    timeout-minutes: 25
+    env:
+      GLYPHS4_URL: https://updates.glyphsapp.com/latest4.php
+      APP: /Applications/Glyphs 4.app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        timeout-minutes: 2
+
+      - name: System info + desktop screenshot
+        timeout-minutes: 1
+        continue-on-error: true
+        run: |
+          mkdir -p mac/log
+          { sw_vers; uname -m; whoami; } 2>&1 | tee mac/log/00-sysinfo.txt
+          screencapture -x mac/log/01-desktop.png || echo "screencapture rc=$?" | tee -a mac/log/00-sysinfo.txt
+
+      - name: Install Glyphs 4 into /Applications
+        timeout-minutes: 4
+        continue-on-error: true
+        run: |
+          curl -L --retry 3 --max-time 180 -o /tmp/Glyphs4.zip "$GLYPHS4_URL"
+          ditto -xk /tmp/Glyphs4.zip /Applications
+          xattr -dr com.apple.quarantine "$APP" || true
+          for k in CFBundleShortVersionString CFBundleVersion CFBundleIdentifier; do
+            echo "$k = $(defaults read "$APP/Contents/Info.plist" $k)" | tee -a mac/log/02-installed.txt
+          done
+
+      - name: Python for Glyphs 4 = the official Plugin Manager module (GlyphsPython, main, 3.14) + glyphs-cli
+        timeout-minutes: 8
+        continue-on-error: true
+        run: |
+          # glyphs-packages packages.plist (branch glyphs3, read by both apps): builds >= 3800 get
+          # https://github.com/schriftgestalt/GlyphsPython (main, Python 3.14, PyObjC 12.2 bundled, last commit 2026-07-26).
+          # GlyphsPythonPlugin's py314 branch is the older location (3.14.6, 2026-06-29); kept as the fallback.
+          REPOS="$HOME/Library/Application Support/Glyphs 4/Repositories"
+          mkdir -p "$REPOS"
+          git clone -q --depth 1 https://github.com/schriftgestalt/GlyphsPython "$REPOS/GlyphsPython" 2>&1 | tail -2
+          GPY="$REPOS/GlyphsPython/Python.framework"
+          if [ ! -x "$GPY/Versions/3.14/bin/python3" ]; then
+            echo "GlyphsPython clone failed, falling back to GlyphsPythonPlugin py314" | tee mac/log/03-python.txt
+            git clone -q --depth 1 --branch py314 https://github.com/schriftgestalt/GlyphsPythonPlugin "$REPOS/GlyphsPythonPlugin" 2>&1 | tail -2
+            GPY="$REPOS/GlyphsPythonPlugin/Python.framework"
+          fi
+          PY="$GPY/Versions/3.14/bin/python3"
+          echo "using $GPY" | tee -a mac/log/03-python.txt
+          echo "GPY=$GPY" >> "$GITHUB_ENV"; echo "PY=$PY" >> "$GITHUB_ENV"
+          "$PY" -m pip --version 2>/dev/null || "$PY" -m ensurepip --upgrade 2>&1 | tail -1
+          "$PY" -m pip install -q --break-system-packages glyphs-cli 2>&1 | tail -2 || "$PY" -m pip install -q glyphs-cli 2>&1 | tail -2
+          # propbold-cli needs skia-pathops; cp314 wheels may not exist yet — try, but the diag's CLI reference can be skipped
+          "$PY" -m pip install -q --break-system-packages -e ./propbold-cli 2>&1 | tail -2 || "$PY" -m pip install -q -e ./propbold-cli 2>&1 | tail -2 || echo "propbold-cli not installable into Python 3.14 (diag CLI reference will be skipped)" | tee -a mac/log/03-python.txt
+          "$PY" -c "import objc, AppKit, Foundation, sys; print('python', sys.version.split()[0], 'pyobjc', objc.__version__)" | tee -a mac/log/03-python.txt
+          G="$GPY/Versions/3.14/bin/glyphs"; [ -x "$G" ] || G=$(find "$GPY" -type f -perm -u+x -name glyphs 2>/dev/null | head -1)
+          echo "GLYPHS_CLI=$G" >> "$GITHUB_ENV"; echo "glyphs-cli at: $G" | tee -a mac/log/03-python.txt
+          "$G" --version 2>&1 | tee -a mac/log/03-python.txt || true
+          # propbold-compare needs no Glyphs: give it the runner's own python3 in a venv (pathops wheels exist there)
+          python3 -m venv /tmp/cmpvenv && /tmp/cmpvenv/bin/pip install -q -e ./propbold-cli 2>&1 | tail -1
+          echo "CMP_PY=/tmp/cmpvenv/bin/python" >> "$GITHUB_ENV"
+          /tmp/cmpvenv/bin/python -c "import propbold, pathops, glyphsLib; print('compare venv ok', propbold.__version__)" | tee -a mac/log/03-python.txt
+          ls "$REPOS" | tee -a mac/log/03-python.txt
+
+      - name: Install the plugin bundle for the GUI app
+        timeout-minutes: 1
+        continue-on-error: true
+        run: |
+          d="$HOME/Library/Application Support/Glyphs 4/Plugins"
+          mkdir -p "$d"; rm -rf "$d/ProportionalBold.glyphsPlugin"
+          cp -R ProportionalBold.glyphsPlugin "$d/"
+          xattr -dr com.apple.quarantine "$d/ProportionalBold.glyphsPlugin" || true
+          # select the module's framework for the GUI app (the key Settings > Addons > Python version writes)
+          defaults write com.GeorgSeifert.Glyphs4 GSPythonFrameworkPath -string "$GPY"
+          defaults read com.GeorgSeifert.Glyphs4 GSPythonFrameworkPath | tee mac/log/04-python-pref.txt
+          # Sparkle-style keys: harmless if Glyphs ignores them, suppress the first-run update prompt if it honours them
+          defaults write com.GeorgSeifert.Glyphs4 SUEnableAutomaticChecks -bool NO
+          defaults write com.GeorgSeifert.Glyphs4 SUHasLaunchedBefore -bool YES
+          ls -la "$d" | tee mac/log/04-plugins-folder.txt
+
+      - name: Launch Glyphs 4 and get past the first-launch dialogs with System Events
+        timeout-minutes: 6
+        continue-on-error: true
+        run: |
+          T() { perl -e 'alarm shift @ARGV; exec @ARGV' "$@"; }          # portable timeout
+          shot() { screencapture -x "mac/log/$1.png" 2>/dev/null || true; }
+          cat > /tmp/ui_dance.applescript <<'ASEOF'
+          set AppleScript's text item delimiters to ", "
+          set logText to ""
+          tell application "System Events"
+          	-- 1) macOS local-network privacy alert (system prompt; may belong to another process)
+          	repeat with p in {"Glyphs 4", "UserNotificationCenter", "CoreServicesUIAgent", "SecurityAgent"}
+          		try
+          			tell process (p as text)
+          				repeat with w in windows
+          					try
+          						click (first button of w whose name is "Don't Allow")
+          						set logText to logText & "clicked Don't Allow in " & (p as text) & linefeed
+          					end try
+          					try
+          						repeat with s in sheets of w
+          							try
+          								click (first button of s whose name is "Don't Allow")
+          								set logText to logText & "clicked Don't Allow (sheet) in " & (p as text) & linefeed
+          							end try
+          						end repeat
+          					end try
+          				end repeat
+          			end tell
+          		end try
+          	end repeat
+          	-- 2) Welcome window: tick the license checkbox, then Continue Trial
+          	try
+          		tell process "Glyphs 4"
+          			repeat with w in windows
+          				set wname to "(unnamed)"
+          				try
+          					set wname to name of w
+          				end try
+          				if wname contains "Welcome" or wname contains "Glyphs" then
+          					try
+          						repeat with cb in checkboxes of w
+          							if (value of cb) is 0 then
+          								click cb
+          								set logText to logText & "ticked checkbox" & linefeed
+          							end if
+          						end repeat
+          					end try
+          					delay 0.5
+          					repeat with bname in {"Continue Trial", "Try", "Try Glyphs", "Continue", "Start Trial"}
+          						try
+          							set b to first button of w whose name is (bname as text)
+          							if enabled of b then
+          								click b
+          								set logText to logText & "clicked '" & (bname as text) & "'" & linefeed
+          							else
+          								set logText to logText & "'" & (bname as text) & "' still disabled" & linefeed
+          							end if
+          						end try
+          					end repeat
+          				end if
+          			end repeat
+          		end tell
+          	end try
+          	-- 3) update-check dialog and any other window/sheet: click a dismiss-like button
+          	try
+          		tell process "Glyphs 4"
+          			repeat with w in windows
+          				set wname to "(unnamed)"
+          				try
+          					set wname to name of w
+          				end try
+          				if wname does not contain "Welcome" then
+          					repeat with bname in {"Don't Check", "Don’t Check", "Not Now", "Later", "Cancel", "Don't Allow", "Skip", "No"}
+          						try
+          							click (first button of w whose name is (bname as text))
+          							set logText to logText & "clicked '" & (bname as text) & "' in window " & wname & linefeed
+          						end try
+          						try
+          							repeat with s in sheets of w
+          								click (first button of s whose name is (bname as text))
+          								set logText to logText & "clicked '" & (bname as text) & "' in sheet of " & wname & linefeed
+          							end repeat
+          						end try
+          					end repeat
+          				end if
+          			end repeat
+          		end tell
+          	end try
+          	-- 4) report what is still on screen
+          	try
+          		tell process "Glyphs 4"
+          			repeat with w in windows
+          				set wname to "(unnamed)"
+          				try
+          					set wname to name of w
+          				end try
+          				set bn to {}
+          				try
+          					set bn to name of every button of w
+          				end try
+          				set logText to logText & "window: " & wname & " | buttons: " & (bn as text) & linefeed
+          				try
+          					set logText to logText & "   text: " & ((value of every static text of w) as text) & linefeed
+          				end try
+          			end repeat
+          		end tell
+          	end try
+          end tell
+          return logText
+          ASEOF
+          cat > /tmp/ui_report.applescript <<'ASEOF'
+          set AppleScript's text item delimiters to ", "
+          set logText to ""
+          tell application "System Events"
+          	try
+          		tell process "Glyphs 4"
+          			repeat with w in windows
+          				set wname to "(unnamed)"
+          				try
+          					set wname to name of w
+          				end try
+          				set bn to {}
+          				try
+          					set bn to name of every button of w
+          				end try
+          				set cb to {}
+          				try
+          					set cb to name of every checkbox of w
+          				end try
+          				set st to {}
+          				try
+          					set st to value of every static text of w
+          				end try
+          				set logText to logText & "window: " & wname & " | buttons: " & (bn as text) & " | checkboxes: " & (cb as text) & linefeed & "   text: " & (st as text) & linefeed
+          				try
+          					repeat with s in sheets of w
+          						set logText to logText & "   sheet buttons: " & ((name of every button of s) as text) & " | text: " & ((value of every static text of s) as text) & linefeed
+          					end repeat
+          				end try
+          			end repeat
+          		end tell
+          	end try
+          end tell
+          return logText
+          ASEOF
+          "$APP/Contents/MacOS/Glyphs 4" > mac/log/glyphs4-launch.log 2>&1 &
+          sleep 25
+          shot 10-launched
+          T 20 osascript -e 'tell application "Glyphs 4" to activate' || true
+          # Glyphs 4's first-launch dialogs may differ from Glyphs 3: record every window before any click
+          T 40 osascript /tmp/ui_report.applescript > mac/log/09-windows-before-clicks.txt 2>&1 || true
+          cat mac/log/09-windows-before-clicks.txt
+          for i in $(seq 1 10); do
+            echo "--- round $i $(date +%T)" | tee -a mac/log/11-ui-rounds.txt
+            T 40 osascript /tmp/ui_dance.applescript 2>&1 | tee -a mac/log/11-ui-rounds.txt
+            shot "12-round-$i"
+            welcome=$(T 15 osascript -e 'tell application "System Events" to tell process "Glyphs 4" to exists (first window whose name contains "Welcome")' 2>&1 || echo error)
+            echo "welcome window exists: $welcome" | tee -a mac/log/11-ui-rounds.txt
+            if [ "$welcome" = "false" ] && [ "$i" -ge 3 ]; then break; fi
+            sleep 4
+          done
+          T 15 osascript -e 'tell application "System Events" to tell process "Glyphs 4" to get name of every window' > mac/log/13-windows-final.txt 2>&1 || true
+          cat mac/log/13-windows-final.txt
+          shot 14-after-dialogs
+
+      - name: CHECK 0 for real – read the Filter menu with System Events
+        timeout-minutes: 2
+        continue-on-error: true
+        run: |
+          T() { perl -e 'alarm shift @ARGV; exec @ARGV' "$@"; }
+          T 20 osascript -e 'tell application "Glyphs 4" to activate' || true
+          sleep 2
+          T 30 osascript -e 'tell application "System Events" to tell process "Glyphs 4" to get name of every menu item of menu "Filter" of menu bar item "Filter" of menu bar 1' > mac/log/20-filter-menu.txt 2>&1 \
+            || T 30 osascript -e 'tell application "System Events" to tell process "Glyphs 4" to get name of every menu item of menu "Filter" of menu bar 1' >> mac/log/20-filter-menu.txt 2>&1 || true
+          if grep -q "Proportional Bold" mac/log/20-filter-menu.txt; then echo "PASS  0.menu_item  Filter menu contains the plugin item" | tee -a mac/log/20-filter-menu.txt
+          else echo "FAIL  0.menu_item  plugin item not in Filter menu (see launch log)" | tee -a mac/log/20-filter-menu.txt; fi
+          T 15 osascript -e 'tell application "System Events" to tell process "Glyphs 4" to click menu bar item "Filter" of menu bar 1' || true
+          sleep 1
+          screencapture -x mac/log/21-filter-menu.png || true
+          T 15 osascript -e 'tell application "System Events" to key code 53' || true
+          grep -n -i -E "python|proportional|traceback|error|principal|plugin" mac/log/glyphs4-launch.log | head -60 > mac/log/22-launch-log-grep.txt || true
+
+      - name: Quit Glyphs 4
+        timeout-minutes: 1
+        continue-on-error: true
+        run: |
+          T() { perl -e 'alarm shift @ARGV; exec @ARGV' "$@"; }
+          defaults read com.GeorgSeifert.Glyphs4 > mac/log/23-defaults-glyphs4.txt 2>&1 || true
+          T 15 osascript -e 'quit app "Glyphs 4"' || true
+          sleep 5
+          pkill -x "Glyphs 4" || true
+          sleep 2
+          pgrep -fl "Glyphs 4" > mac/log/24-process-after-quit.txt 2>&1 || echo "no Glyphs 4 process" > mac/log/24-process-after-quit.txt
+
+      - name: Headless check through glyphs-cli (U1, U2, U3 against testdata/expected_sub415.json)
+        timeout-minutes: 8
+        continue-on-error: true
+        env:
+          PROPBOLD_REPO: ${{ github.workspace }}
+        run: |
+          T() { perl -e 'alarm shift @ARGV; exec @ARGV' "$@"; }
+          T 420 "$GLYPHS_CLI" run --app "$APP" --python "$GPY/Versions/3.14/Python" --plugins ./ProportionalBold.glyphsPlugin mac/headless_check.py 2>&1 | tee mac/log/30-headless-cli.txt
+          ls -la mac/log/ | tee mac/log/31-listing.txt
+          grep -E "^(PASS|FAIL|SKIP|RESULT|MODE)" mac/log/30-headless-cli.txt || true
+
+      - name: Diagnose the stem measurement headless (mac/diag_stem.py)
+        timeout-minutes: 4
+        continue-on-error: true
+        env:
+          PROPBOLD_REPO: ${{ github.workspace }}
+        run: |
+          T() { perl -e 'alarm shift @ARGV; exec @ARGV' "$@"; }
+          T 200 "$GLYPHS_CLI" run --app "$APP" --python "$GPY/Versions/3.14/Python" --plugins ./ProportionalBold.glyphsPlugin mac/diag_stem.py 2>&1 | grep -v Bugsnag | tee mac/log/40-diag-stem.txt
+
+      - name: Cross-engine agreement and counter statistics (propbold-compare on the plugin's output)
+        timeout-minutes: 5
+        continue-on-error: true
+        run: |
+          T() { perl -e 'alarm shift @ARGV; exec @ARGV' "$@"; }
+          curl -L --retry 3 --max-time 120 -o /tmp/NotoSansCJKtc-Bold.otf https://github.com/notofonts/noto-cjk/raw/main/Sans/OTF/TraditionalChinese/NotoSansCJKtc-Bold.otf
+          OUT=$(ls mac/log/propbold-check-cli-*.glyphs 2>/dev/null | head -1)
+          echo "plugin output: $OUT" | tee mac/log/50-compare.txt
+          T 240 "$CMP_PY" -m propbold.compare "$OUT" --ratio 1.45 --gt /tmp/NotoSansCJKtc-Bold.otf --json mac/log/50-compare-rows.json 2>&1 | tee -a mac/log/50-compare.txt
+
+      - name: Upload screenshots, logs and results JSON
+        if: always()
+        timeout-minutes: 3
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-verify-g4-${{ github.run_id }}
           path: mac/log
           if-no-files-found: warn

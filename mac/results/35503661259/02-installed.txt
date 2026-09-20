@@ -1,0 +1,3 @@
+CFBundleShortVersionString = 3.5
+CFBundleVersion = 3532
+CFBundleIdentifier = com.GeorgSeifert.Glyphs3
