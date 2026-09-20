@@ -1,4 +1,4 @@
-name: mac-verify (stage 3 – Glyphs 3 on macos-latest, real checks)
+name: mac-verify (stage 4 – Glyphs 3 on macos-latest, fallback + cross-engine IoU)
 
 on:
   workflow_dispatch:
@@ -254,11 +254,21 @@ jobs:
           T() { perl -e 'alarm shift @ARGV; exec @ARGV' "$@"; }
           T 200 "$GLYPHS_CLI" run --app "$APP" --python "$GPY/Versions/3.11/Python" --plugins ./ProportionalBold.glyphsPlugin mac/diag_stem.py 2>&1 | grep -v Bugsnag | tee mac/log/40-diag-stem.txt
 
+      - name: Cross-engine agreement and counter statistics (propbold-compare on the plugin's output)
+        timeout-minutes: 5
+        continue-on-error: true
+        run: |
+          T() { perl -e 'alarm shift @ARGV; exec @ARGV' "$@"; }
+          curl -L --retry 3 --max-time 120 -o /tmp/NotoSansCJKtc-Bold.otf https://github.com/notofonts/noto-cjk/raw/main/Sans/OTF/TraditionalChinese/NotoSansCJKtc-Bold.otf
+          OUT=$(ls mac/log/propbold-check-cli-*.glyphs 2>/dev/null | head -1)
+          echo "plugin output: $OUT" | tee mac/log/50-compare.txt
+          T 240 "$PY" -m propbold.compare "$OUT" --ratio 1.45 --gt /tmp/NotoSansCJKtc-Bold.otf --json mac/log/50-compare-rows.json 2>&1 | tee -a mac/log/50-compare.txt
+
       - name: Upload screenshots, logs and results JSON
         if: always()
         timeout-minutes: 3
         uses: actions/upload-artifact@v4
         with:
-          name: mac-verify-stage3-${{ github.run_id }}
+          name: mac-verify-stage4-${{ github.run_id }}
           path: mac/log
           if-no-files-found: warn
