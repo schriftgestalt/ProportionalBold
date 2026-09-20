@@ -43,6 +43,7 @@ jobs:
           PYFW=/opt/homebrew/opt/python@3.11/Frameworks/Python.framework
           echo "PY=$PY" >> "$GITHUB_ENV"; echo "PYFW=$PYFW" >> "$GITHUB_ENV"
           $PY -m pip install --break-system-packages -q pyobjc-core pyobjc-framework-Cocoa pyobjc-framework-Quartz glyphs-cli
+          $PY -m pip install --break-system-packages -q -e ./propbold-cli 2>&1 | tail -2 || echo "propbold-cli install failed (diag step will skip the CLI reference)"
           $PY -c "import objc, AppKit, Foundation; print('pyobjc', objc.__version__)" | tee mac/log/03-python.txt
           G=$(find /opt/homebrew -type f -perm -u+x -name glyphs 2>/dev/null | head -1)
           echo "GLYPHS_CLI=$G" >> "$GITHUB_ENV"; echo "glyphs-cli at: $G" | tee -a mac/log/03-python.txt
@@ -163,6 +164,9 @@ jobs:
           					set bn to name of every button of w
           				end try
           				set logText to logText & "window: " & wname & " | buttons: " & (bn as text) & linefeed
+          				try
+          					set logText to logText & "   text: " & ((value of every static text of w) as text) & linefeed
+          				end try
           			end repeat
           		end tell
           	end try
@@ -225,6 +229,15 @@ jobs:
           T 420 "$GLYPHS_CLI" run --app "$APP" --python "$PYFW/Versions/3.11/Python" --plugins ./ProportionalBold.glyphsPlugin mac/headless_check.py 2>&1 | tee mac/log/30-headless-cli.txt
           ls -la mac/log/ | tee mac/log/31-listing.txt
           grep -E "^(PASS|FAIL|SKIP|RESULT|MODE)" mac/log/30-headless-cli.txt || true
+
+      - name: Diagnose the stem measurement headless (mac/diag_stem.py)
+        timeout-minutes: 4
+        continue-on-error: true
+        env:
+          PROPBOLD_REPO: ${{ github.workspace }}
+        run: |
+          T() { perl -e 'alarm shift @ARGV; exec @ARGV' "$@"; }
+          T 200 "$GLYPHS_CLI" run --app "$APP" --python "$PYFW/Versions/3.11/Python" --plugins ./ProportionalBold.glyphsPlugin mac/diag_stem.py 2>&1 | grep -v Bugsnag | tee mac/log/40-diag-stem.txt
 
       - name: Upload screenshots, logs and results JSON
         if: always()
