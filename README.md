@@ -62,6 +62,12 @@ If you would rather not run it yourself: send a Regular master and I return the 
 
 The report is `propbold-compare --report`; an example from the verification run: [docs/report-example.txt](docs/report-example.txt).
 
+Bugs and questions: open an issue on GitHub, or write to proportionalbold@gmail.com.
+
+問題回報與提問：在 GitHub 開 issue，或來信 proportionalbold@gmail.com。
+
+不具合の報告やご質問は、GitHub で issue を開くか、proportionalbold@gmail.com までお寄せください。
+
 ## License
 
 MIT. Test data: Noto Sans CJK (SIL Open Font License).

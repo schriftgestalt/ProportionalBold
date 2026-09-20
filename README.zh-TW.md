@@ -62,6 +62,12 @@ If you would rather not run it yourself: send a Regular master and I return the 
 
 清單由 `propbold-compare --report` 產生；驗證那一輪的範例：[docs/report-example.txt](docs/report-example.txt)。
 
+問題回報與提問：在 GitHub 開 issue，或來信 proportionalbold@gmail.com。
+
+Bugs and questions: open an issue on GitHub, or write to proportionalbold@gmail.com.
+
+不具合の報告やご質問は、GitHub で issue を開くか、proportionalbold@gmail.com までお寄せください。
+
 ## 授權
 
 MIT。測試資料：思源黑體（SIL Open Font License）。
