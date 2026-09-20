@@ -482,11 +482,11 @@ jobs:
           				try
           					set cb to name of every checkbox of w
           				end try
-          				set st to {}
+          				set stxt to {}
           				try
-          					set st to value of every static text of w
+          					set stxt to value of every static text of w
           				end try
-          				set logText to logText & "window: " & wname & " | buttons: " & (bn as text) & " | checkboxes: " & (cb as text) & linefeed & "   text: " & (st as text) & linefeed
+          				set logText to logText & "window: " & wname & " | buttons: " & (bn as text) & " | checkboxes: " & (cb as text) & linefeed & "   text: " & (stxt as text) & linefeed
           				try
           					repeat with s in sheets of w
           						set logText to logText & "   sheet buttons: " & ((name of every button of s) as text) & " | text: " & ((value of every static text of s) as text) & linefeed

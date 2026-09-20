@@ -1,0 +1,1 @@
+/tmp/ui_report.applescript:400:402: script error: Expected expression but found “st”. (-2741)
