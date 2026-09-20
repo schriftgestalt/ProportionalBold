@@ -8,7 +8,8 @@
    "not a valid font file".
 4. Installs on macOS (Font Book validation passes) — checked by hand.
 5. Vertical text (`vert`) and kerning still work in the output: `vhea/vmtx/GSUB/GPOS/GDEF/BASE` copied.
-6. The plugin's Glyphs 3 run on a Mac, and the Glyphs 4 run, both produce a master (not yet done).
+6. The plugin's Glyphs 3 run on a Mac, and the Glyphs 4 run, both produce a master.
+   ✔ Glyphs 3.5 (3532) and Glyphs 4.1 (4107), GitHub Actions macOS runners, run 35503951963, 2026-09-20 — see mac/results/.
 
 Diagnostic switches (environment variables, not CLI flags — never needed in normal use):
 - `PROPBOLD_MAX_GLYPHS=65534` writes only the first N glyphs (layout tables are then dropped).

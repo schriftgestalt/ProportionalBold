@@ -13,15 +13,15 @@
 	<key>CFBundleName</key>
 	<string>Proportional Bold</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.1.4</string>
+	<string>1.0.0</string>
 	<key>CFBundleVersion</key>
-	<string>5</string>
+	<string>6</string>
 	<key>UpdateFeedURL</key>
 	<string>https://raw.githubusercontent.com/fanzhixiang777/ProportionalBold/main/ProportionalBold.glyphsPlugin/Contents/Info.plist</string>
 	<key>productPageURL</key>
 	<string>https://github.com/fanzhixiang777/ProportionalBold</string>
 	<key>productReleaseNotes</key>
-	<string>Initial release: per-glyph proportional emboldening into a new master.</string>
+	<string>1.0.0: verified on Glyphs 3.5 and 4.1; fallback stem for unmeasurable glyphs; see mac/results.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright 2026, Ez. MIT License.</string>
 	<key>NSPrincipalClass</key>

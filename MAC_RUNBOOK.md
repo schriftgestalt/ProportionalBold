@@ -1,3 +1,5 @@
+> Superseded 2026-09-20: everything in this runbook now runs on GitHub Actions macOS runners without a human — see `.github/workflows/mac-verify.yml` and `mac/results/`. Kept for a rented Mac if one is ever needed.
+
 # MAC_RUNBOOK.md — one rented Mac, one day: verify ProportionalBold in Glyphs 3 and Glyphs 4
 
 Audience: **Claude Code running on this Mac**, executing top to bottom. Steps marked **HUMAN** need a
