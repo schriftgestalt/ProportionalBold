@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-headless_check.py — runs INSIDE Glyphs (Macro panel, or pushed in by mac/glyphs_remote.py).
-Exercises the ProportionalBold plugin without touching any menu or dialog and prints one
-PASS/FAIL line per check plus a JSON summary. Works in Glyphs 3 (Python 3.11) and Glyphs 4 (3.14).
+headless_check.py — runs INSIDE Glyphs, two ways:
 
-Set REPO below if the repository is not at ~/ProportionalBold.
+  headless (no GUI, CI):
+    glyphs run --app "/Applications/Glyphs 3.app" --python <…/Python.framework/Versions/3.11/Python> \
+               --plugins ./ProportionalBold.glyphsPlugin mac/headless_check.py
+  in the app: paste into Window > Macro Panel and run.
+
+Exercises the ProportionalBold plugin without touching any menu or dialog. One PASS/FAIL/SKIP line
+per check, a JSON summary and a copy of this log are written to <repo>/mac/log/.
+Checks are the ones MAC_RUNBOOK.md section F defines (U1 corners/bounds, U2 master.copy(), U3 timing).
+CHECK 0's menu-item test is GUI-only: it is SKIPped, not failed, when Glyphs.menu is unavailable.
 """
 import json
 import os
@@ -12,25 +18,77 @@ import sys
 import time
 import traceback
 
-REPO = os.path.expanduser(os.environ.get("PROPBOLD_REPO", "~/ProportionalBold"))
 RATIO = 1.45
-TESTFONT = os.path.join(REPO, "testdata", "NotoSansCJKtc-Regular-sub415.otf")
+LOG = []
+
+
+def out(line):
+    LOG.append(line)
+    print(line)
+
+
+# ---------------------------------------------------------------- where is the repo
+def find_repo():
+    env = os.environ.get("PROPBOLD_REPO")
+    if env:
+        return os.path.expanduser(env)
+    try:
+        here = os.path.dirname(os.path.abspath(__file__))       # glyphs-cli sets __file__
+        cand = os.path.dirname(here)
+        if os.path.isdir(os.path.join(cand, "testdata")):
+            return cand
+    except NameError:
+        pass                                                      # Macro panel: no __file__
+    return os.path.expanduser("~/ProportionalBold")
+
+
+REPO = find_repo()
+LOGDIR = os.path.join(REPO, "mac", "log")
+os.makedirs(LOGDIR, exist_ok=True)
+TESTFONT_OTF = os.path.join(REPO, "testdata", "NotoSansCJKtc-Regular-sub415.otf")
+TESTFONT_GLYPHS = os.path.join(REPO, "testdata", "NotoSansCJKtc-Regular-sub415.glyphs")
 EXPECTED = os.path.join(REPO, "testdata", "expected_sub415.json")
 
-from GlyphsApp import Glyphs, FILTER_MENU
-import objc
+from GlyphsApp import Glyphs, FILTER_MENU  # noqa: E402
+import objc  # noqa: E402
 
-results = {"glyphs_version": Glyphs.versionString, "build": Glyphs.buildNumber,
-           "python": sys.version.split()[0], "checks": {}}
+results = {"mode": None, "glyphs_version": None, "build": None, "python": sys.version.split()[0], "checks": {}}
+for attr, key in (("versionString", "glyphs_version"), ("buildNumber", "build")):
+    try:
+        results[key] = getattr(Glyphs, attr)
+    except Exception:
+        pass
+BUILD = str(results["build"] or "unknown").replace(".0", "")
 
 
 def check(name, ok, detail=""):
     results["checks"][name] = {"ok": bool(ok), "detail": detail}
-    print("%s  %s  %s" % ("PASS" if ok else "FAIL", name, detail))
+    out("%s  %s  %s" % ("PASS" if ok else "FAIL", name, detail))
 
 
+def skip(name, reason):
+    results["checks"][name] = {"ok": None, "skipped": reason}
+    out("SKIP  %s  %s" % (name, reason))
+
+
+# ---------------------------------------------------------------- GUI or headless?
+def menu_available():
+    try:
+        Glyphs.menu[FILTER_MENU]
+        return True
+    except Exception:
+        return False
+
+
+MODE = "app" if menu_available() else "cli"
+results["mode"] = MODE
+out("MODE %s  Glyphs %s (%s)  Python %s  repo %s" % (MODE, results["glyphs_version"], results["build"], results["python"], REPO))
+
+
+# ---------------------------------------------------------------- plugin class
 def plugin_class():
-    """The class Glyphs loaded from the bundle; fallback: load plugin.py under another name."""
+    """The class Glyphs loaded from the bundle (app: Plugins folder; cli: --plugins);
+    fallback: load plugin.py from the repo under another class name."""
     for cname in ("ProportionalBold", "ProportionalBoldHeadless"):
         try:
             return objc.lookUpClass(cname), cname == "ProportionalBold"
@@ -43,8 +101,41 @@ def plugin_class():
     return ns["ProportionalBoldHeadless"], False
 
 
+def make_instance(cls):
+    """alloc().init() runs loadPlugin -> settings() -> start(); start() appends a menu item and
+    cannot work headless, so it is replaced by a no-op there. Fallback: an alloc()-only object,
+    which is enough for the pure-Python methods we call."""
+    if MODE == "cli":
+        try:
+            cls.start = lambda self: None
+        except Exception:
+            pass
+    try:
+        return cls.alloc().init()
+    except Exception:
+        out("note: alloc().init() failed, using alloc() only\n" + traceback.format_exc())
+        return cls.alloc()
+
+
+# ---------------------------------------------------------------- helpers
+def open_test_font():
+    """OTF first (what the runbook says), .glyphs copy second (same outlines, made with glyphsLib)."""
+    for path in (TESTFONT_OTF, TESTFONT_GLYPHS):
+        if not os.path.exists(path):
+            continue
+        for kwargs in ({"showInterface": False}, {}):
+            try:
+                f = Glyphs.open(path, **kwargs)
+            except Exception as e:
+                out("note: Glyphs.open(%s, %s) raised %r" % (os.path.basename(path), kwargs, e))
+                f = None
+            if f is not None and len(f.glyphs) > 400:
+                return f, path
+    return None, None
+
+
 def glyph_by_unicode(font, hexcode):
-    g = font.glyphs[hexcode]                       # Glyphs names imported glyphs uniXXXX
+    g = font.glyphs[hexcode]                       # imported OTF: glyphs are named uniXXXX
     if g is not None:
         return g
     for g in font.glyphs:
@@ -57,25 +148,43 @@ def oncurve_count(layer):
     return sum(1 for p in layer.paths for n in p.nodes if n.type != "offcurve")
 
 
-def main():
-    # CHECK 0 — plugin loaded by Glyphs, menu item present
-    cls, loaded_by_glyphs = plugin_class()
-    titles = [item.title() for item in Glyphs.menu[FILTER_MENU].submenu().itemArray()] if hasattr(Glyphs.menu[FILTER_MENU], "submenu") else []
-    menu_ok = any("Proportional Bold" in t or "比例加粗" in t for t in titles)
-    check("0.plugin_loaded", loaded_by_glyphs, "class %s; menu item %s" % ("found" if loaded_by_glyphs else "NOT loaded (fallback exec)", "present" if menu_ok else "absent"))
-    plugin = cls.alloc().init()
+def bounds_list(layer):
+    b = layer.bounds
+    return [b.origin.x, b.origin.y, b.origin.x + b.size.width, b.origin.y + b.size.height]
 
-    # open the test font without a window
-    font = Glyphs.open(TESTFONT, showInterface=False)
-    check("0.testfont_open", font is not None and len(font.glyphs) > 400, "%s glyphs" % (len(font.glyphs) if font else 0))
+
+# ---------------------------------------------------------------- checks
+def main():
+    # CHECK 0 — plugin class loaded; menu item (GUI only)
+    cls, loaded_by_glyphs = plugin_class()
+    check("0.plugin_class_loaded", loaded_by_glyphs,
+          "class %s" % ("found (loaded by Glyphs)" if loaded_by_glyphs else "NOT loaded by Glyphs; exec fallback used"))
+    if MODE == "app":
+        try:
+            titles = [item.title() for item in Glyphs.menu[FILTER_MENU].submenu().itemArray()]
+            check("0.menu_item", any("Proportional Bold" in t or "比例加粗" in t for t in titles), "Filter menu: %s" % titles[-6:])
+        except Exception as e:
+            check("0.menu_item", False, "could not read Filter menu: %r" % e)
+    else:
+        skip("0.menu_item", "GUI-only (no Glyphs.menu under glyphs-cli); the workflow reads the Filter menu with System Events instead")
+    plugin = make_instance(cls)
+
+    font, used = open_test_font()
+    check("0.testfont_open", font is not None, "%s: %s glyphs" % (os.path.basename(used) if used else "no test font opened", len(font.glyphs) if font else 0))
+    if font is None:
+        return
     exp = json.load(open(EXPECTED, encoding="utf-8"))
     src = font.masters[0]
     n_masters_before = len(font.masters)
-    reg_nodes = {u: oncurve_count(glyph_by_unicode(font, u).layers[src.id]) for u in exp["glyphs"] if glyph_by_unicode(font, u)}
+    reg_nodes = {}
+    for u in exp["glyphs"]:
+        g = glyph_by_unicode(font, u)
+        if g is not None:
+            reg_nodes[u] = oncurve_count(g.layers[src.id])
 
-    # CHECK 1 — Offset Curve (the 12-argument GlyphsFilterOffsetCurve call) and the measurement
+    # CHECK 1 — U1: the 12-argument GlyphsFilterOffsetCurve call and the scan-line measurement
     t0 = time.time()
-    r = plugin.emboldenFont(font, RATIO, master=src, log=print)
+    r = plugin.emboldenFont(font, RATIO, master=src, log=out)
     secs = time.time() - t0
     check("1.no_failures", r["failed"] == 0, "done %d skipped %d failed %d %s" % (r["done"], r["skipped"], r["failed"], r["failures"][:5]))
     check("1.median_stem", abs(r["medianStem"] - exp["median_stem_regular"]) <= 2, "%.1f vs expected %.1f" % (r["medianStem"], exp["median_stem_regular"]))
@@ -86,8 +195,7 @@ def main():
         g = glyph_by_unicode(font, u)
         if g is None:
             bad.append((u, "missing")); continue
-        b = g.layers[newId].bounds
-        got = [b.origin.x, b.origin.y, b.origin.x + b.size.width, b.origin.y + b.size.height]
+        got = bounds_list(g.layers[newId])
         if max(abs(a - c) for a, c in zip(got, e["expected_bold_bounds"])) > tol:
             bad.append((e["char"], [round(v, 1) for v in got], e["expected_bold_bounds"]))
     check("1.bounds_match_cli", not bad, "tolerance %d units; mismatches: %s" % (tol, bad[:4]))
@@ -99,40 +207,68 @@ def main():
             rounded.append((exp["glyphs"][u]["char"], reg_nodes[u], n_new))
     check("1.corners_not_rounded", not rounded, "on-curve nodes regular -> bold: %s" % (rounded[:4] or "unchanged within 30%"))
 
-    # CHECK 2 — master.copy() + new id, layer assignment, save/reopen survives
+    # CHECK 2 — U2: master.copy() + new id, layer assignment, save/reopen survives
     check("2.master_added", len(font.masters) == n_masters_before + 1 and font.masters[-1].id == newId and newId != src.id,
           "masters %d -> %d, ids distinct %s" % (n_masters_before, len(font.masters), newId != src.id))
-    empty = [g.name for g in font.glyphs if g.layers[src.id] and len(g.layers[src.id].paths) and g.layers[newId] is not None and len(g.layers[newId].paths) == 0]
+    empty = [g.name for g in font.glyphs
+             if g.layers[src.id] and len(g.layers[src.id].paths) and g.layers[newId] is not None and len(g.layers[newId].paths) == 0]
     check("2.layers_have_paths", not empty, "new-master layers without paths: %d %s" % (len(empty), empty[:5]))
     ax = "n/a"
     try:
         ax = "%s -> %s" % (src.axes[0], font.masters[-1].axes[0])
     except Exception:
         pass
-    out = os.path.join(os.path.expanduser("~/Desktop"), "propbold-check-%s.glyphs" % Glyphs.versionString.split()[0])
-    font.save(out)
-    font.close()
-    re = Glyphs.open(out, showInterface=False)
+    saved = os.path.join(LOGDIR, "propbold-check-%s-%s.glyphs" % (MODE, BUILD))
+    try:
+        font.save(saved)
+    except Exception as e:
+        out("note: font.save raised %r" % e)
+    try:
+        font.close()
+    except Exception:
+        pass
+    re = None
+    try:
+        re = Glyphs.open(saved, showInterface=False)
+    except Exception:
+        try:
+            re = Glyphs.open(saved)
+        except Exception as e:
+            out("note: reopen raised %r" % e)
     ok = re is not None and len(re.masters) == n_masters_before + 1 and all(g.layers[re.masters[-1].id] is not None for g in re.glyphs)
-    check("2.save_reopen", ok, "saved %s; masters %d; axes %s" % (out, len(re.masters) if re else -1, ax))
-    if re:
-        re.close()
+    check("2.save_reopen", ok, "saved %s; masters %s; axes %s" % (saved, len(re.masters) if re else "n/a", ax))
+    if re is not None:
+        try:
+            re.close()
+        except Exception:
+            pass
 
-    # CHECK 3 — timing: extrapolate the 415-glyph run to 65,535 glyphs
+    # CHECK 3 — U3: timing, extrapolated from the 415-glyph run to 65,535 glyphs
     per = secs / max(r["done"] + r["skipped"], 1)
     est = per * 65535 / 60.0
     check("3.timing", est <= 30, "%.1fs for %d glyphs -> %.1f ms/glyph -> ~%.0f min for 65,535 (limit 30)" % (secs, r["done"] + r["skipped"], per * 1000, est))
 
     results["summary"] = r
     results["seconds"] = secs
-    print("JSON " + json.dumps(results, ensure_ascii=False))
-    resfile = os.path.join(REPO, "mac", "results-%s.json" % results["build"])
-    with open(resfile, "w", encoding="utf-8") as fh:
-        json.dump(results, fh, ensure_ascii=False, indent=1)
-    print("wrote", resfile)
+    results["testfont"] = used
 
 
 try:
     main()
 except Exception:
-    print("FAIL  uncaught\n" + traceback.format_exc())
+    out("FAIL  uncaught\n" + traceback.format_exc())
+    results["checks"]["uncaught"] = {"ok": False, "detail": traceback.format_exc()}
+
+n_pass = sum(1 for c in results["checks"].values() if c.get("ok") is True)
+n_fail = sum(1 for c in results["checks"].values() if c.get("ok") is False)
+n_skip = sum(1 for c in results["checks"].values() if c.get("ok") is None)
+out("RESULT  pass=%d fail=%d skip=%d" % (n_pass, n_fail, n_skip))
+try:
+    resfile = os.path.join(LOGDIR, "results-%s-%s.json" % (MODE, BUILD))
+    with open(resfile, "w", encoding="utf-8") as fh:
+        json.dump(results, fh, ensure_ascii=False, indent=1, default=str)
+    with open(os.path.join(LOGDIR, "check-%s-%s.log" % (MODE, BUILD)), "w", encoding="utf-8") as fh:
+        fh.write("\n".join(LOG) + "\n")
+    print("wrote", resfile)
+except Exception:
+    print("could not write results:\n" + traceback.format_exc())
