@@ -1,9 +1,9 @@
 Proportional Bold — hand-work report
 file: /home/claude/runs/35503951963/g3/propbold-check-cli-3532.glyphs
 source master: Regular    output master: Regular PropBold 1.45    ratio 1.45
-glyphs with outlines: 413
+glyphs with outlines: 414
 
-1. Counters lost — 83 glyphs have fewer enclosed counters in the output than in the source. Start here.
+1. Counters lost — 84 glyphs have fewer enclosed counters in the output than in the source. Start here.
    cid30501     U+7C72 籲  counters 7 -> 2  stem 50.0  offset 11.2
    cid12991     U+568D 嚍  counters 6 -> 1  stem 54.0  offset 12.2
    cid47422     U+9F7B 齻  counters 5 -> 1  stem 54.0  offset 12.2
@@ -50,6 +50,7 @@ glyphs with outlines: 413
    cid44507     U+992F 餯  counters 3 -> 2  stem 63.0  offset 14.2
    cid44182     U+9897 颗  counters 4 -> 3  stem 64.0  offset 14.4
    cid43748     U+978B 鞋  counters 3 -> 2  stem 65.0  offset 14.6
+   cid43205     U+967A 険  counters 2 -> 1  stem 67.0  offset 15.1
    cid39954     U+8F86 辆  counters 2 -> 1  stem 64.0  offset 14.4
    cid39784     U+8F22 輢  counters 4 -> 3  stem 61.0  offset 13.7
    cid39728     U+8F00 輀  counters 2 -> 1  stem 57.0  offset 12.8

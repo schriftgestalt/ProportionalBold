@@ -29,21 +29,21 @@ A glyph whose scan lines find fewer than 6 ink runs (a dot, a tiny mark) has no 
 font's **median measured stem** as a fallback and is counted separately as `fallback` in the summary — never
 as done, never as an offset of 0. The plugin does the same (`NoStem` → second phase with the median).
 
-## Measured on real plugin output (Glyphs 3.5 build 3532, headless, 413-glyph subset, 2026-09-20)
+## Measured on real plugin output (run 35598894920: Glyphs 3.5 build 3532, headless, 2026-09-21)
 
 `propbold-compare <plugin-output.glyphs> --gt NotoSansCJKtc-Bold.otf`:
 
 | metric | plugin (Glyphs Offset Curve) | CLI (pathops, miter 1.5) | single global offset |
 |---|---|---|---|
-| IoU plugin vs CLI, same outlines | mean 0.993, min 0.987 (excluding the one glyph the old plugin left unchanged) | — | — |
-| IoU vs designer Bold, all 412 | 0.8310 | 0.8318 | 0.8287 |
-| IoU vs designer Bold, 318 CJK | 0.8547 | 0.8553 | 0.8532 |
+| IoU plugin vs CLI, same outlines | mean 0.994, min 0.980 (413 glyphs compared, run 35598894920; cid43205 U+967A excluded: skia-pathops cannot intersect its plugin and CLI outlines, whose edges largely coincide — [details](../mac/results/35598894920/excluded-cid43205.txt)) | — | — |
+| mean IoU vs designer Bold, all 412 | 0.8313 | 0.8318 | 0.8287 |
+| mean IoU vs designer Bold, 318 CJK | 0.8547 | 0.8553 | 0.8532 |
 | counters closed vs designer, all | 18.4 % | 17.5 % | 22.1 % |
 | counters closed vs designer, CJK | 23.9 % | 22.6 % | 28.6 % |
 
 Bounds are not a cross-engine metric: at sharp diagonal tips Glyphs' Offset Curve and pathops differ by up to
 35 units in both directions (人's left tip is longer in Glyphs, its right tip longer in pathops) while the area
-agrees to 1 %. `MITER_LIMIT = 1.5` is the closest pathops setting that keeps right angles square; the
+agrees at mean IoU 0.994, minimum 0.980 (run 35598894920). `MITER_LIMIT = 1.5` is the closest pathops setting that keeps right angles square; the
 designer's own tips are short, so Glyphs' treatment is the better one.
 
 ## Large fonts

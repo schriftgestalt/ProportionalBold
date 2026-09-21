@@ -1,0 +1,6 @@
+glyphs compared: 413 of 414 with outlines  (read errors: 0 []; excluded because skia-pathops could not intersect the plugin and CLI outlines: 1 ['cid43205 U+967A'])
+IoU plugin vs CLI: mean 0.9939  median 0.9939  min 0.9801 (floored)  below 0.97: 0 []
+stem plugin==CLI within 1 unit: 412 of 413; fallback glyphs plugin 1, CLI 1
+vs designer weight, all (n=412): mean IoU plugin 0.8313  CLI 0.8318  single-offset d=14.6 0.8287 | counters closed vs designer: plugin 18.4%  CLI 17.5%  single-offset 22.1%
+vs designer weight, CJK (n=318): mean IoU plugin 0.8548  CLI 0.8553  single-offset d=14.6 0.8532 | counters closed vs designer: plugin 23.9%  CLI 22.6%  single-offset 28.6%
+RESULT PASS agreement plugin vs CLI

@@ -16,12 +16,19 @@ Exit code 1 if any glyph has IoU(plugin, CLI) < 0.97 or the mean is < 0.99.
 """
 from __future__ import annotations
 import argparse
+import math
 import json
 import sys
 import numpy as np
 import pathops
 from .core import path_from_glyphset, proportional_bold, dilate, stem_width
 from .spec import DEFAULT_RATIO
+
+
+def floor_to(x, digits=4):
+    """Minima are reported floored, never rounded up."""
+    f = 10 ** digits
+    return math.floor(x * f) / f
 
 
 def iou(a, b):
@@ -105,10 +112,13 @@ def main(argv=None):
         rows.append(r)
 
     ok = [r for r in rows if r.get("iou_plugin_cli") is not None]
+    read_errors = [r["name"] for r in rows if "error" in r]
+    excluded = ["%s U+%04X" % (r["name"], r["unicode"] or 0) for r in rows if "error" not in r and r.get("iou_plugin_cli") is None]
     v = np.array([r["iou_plugin_cli"] for r in ok])
-    low = [(r["name"], round(r["iou_plugin_cli"], 3)) for r in ok if r["iou_plugin_cli"] < 0.97]
-    print(f"glyphs compared: {len(ok)}  (errors: {sum(1 for r in rows if 'error' in r)})")
-    print(f"IoU plugin vs CLI: mean {v.mean():.4f}  median {np.median(v):.4f}  min {v.min():.4f}  below 0.97: {len(low)} {low[:10]}")
+    low = [(r["name"], floor_to(r["iou_plugin_cli"])) for r in ok if r["iou_plugin_cli"] < 0.97]
+    print(f"glyphs compared: {len(ok)} of {len(rows)} with outlines  (read errors: {len(read_errors)} {read_errors[:10]}; "
+          f"excluded because skia-pathops could not intersect the plugin and CLI outlines: {len(excluded)} {excluded[:10]})")
+    print(f"IoU plugin vs CLI: mean {v.mean():.4f}  median {np.median(v):.4f}  min {floor_to(v.min()):.4f} (floored)  below 0.97: {len(low)} {low[:10]}")
     sd = [abs((r['stem_plugin'] or 0) - (r['stem_cli'] or 0)) for r in ok]
     print(f"stem plugin==CLI within 1 unit: {sum(1 for x in sd if x <= 1)} of {len(ok)}; fallback glyphs plugin {sum(r['fallback_plugin'] for r in ok)}, CLI {sum(r['fallback_cli'] for r in ok)}")
     if gt_gs is not None:
@@ -116,7 +126,7 @@ def main(argv=None):
         for label, rs in (("all", A), ("CJK", [r for r in A if r["cjk"]])):
             if not rs:
                 continue
-            print(f"vs designer weight, {label} (n={len(rs)}): IoU plugin {np.mean([r['iou_plugin_gt'] for r in rs]):.4f}  "
+            print(f"vs designer weight, {label} (n={len(rs)}): mean IoU plugin {np.mean([r['iou_plugin_gt'] for r in rs]):.4f}  "
                   f"CLI {np.mean([r['iou_cli_gt'] for r in rs]):.4f}  single-offset d={naive_d:.1f} {np.mean([r['iou_naive_gt'] for r in rs]):.4f} | "
                   f"counters closed vs designer: plugin {100*np.mean([r['counters_plugin'] < r['counters_gt'] for r in rs]):.1f}%  "
                   f"CLI {100*np.mean([r['counters_cli'] < r['counters_gt'] for r in rs]):.1f}%  single-offset {100*np.mean([r['counters_naive'] < r['counters_gt'] for r in rs]):.1f}%")
@@ -124,7 +134,8 @@ def main(argv=None):
         with open(a.json, "w", encoding="utf-8") as fh:
             json.dump(rows, fh, ensure_ascii=False, indent=1, default=float)
     if a.report:
-        write_report(a.report, a.font, src, out, a.ratio, ok, fallback)
+        # the hand-work list does not depend on the IoU: every glyph that was read goes in
+        write_report(a.report, a.font, src, out, a.ratio, [r for r in rows if "error" not in r], fallback)
     bad = len(low) > 0 or v.mean() < 0.99
     print("RESULT", "FAIL" if bad else "PASS", "agreement plugin vs CLI")
     return 1 if bad else 0

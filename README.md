@@ -39,9 +39,9 @@ Glyphs 3.5 (build 3532) and Glyphs 4.1 (build 4107), on GitHub Actions macOS run
 ## Known limits
 
 - Glyphs with fewer than six ink runs on the scan lines (dots, tiny marks) get the median stem, not their own.
-- Sharp diagonal tips (撇, 捺) come out shorter than the command-line tool's, which uses a different offset engine; area agrees to 1 %.
+- Sharp diagonal tips (撇, 捺) come out shorter than the command-line tool's, which uses a different offset engine; the area agrees at mean IoU 0.994, minimum 0.980 (run 35598894920).
 - Dense glyphs still need hand work; junctions are not treated.
-- About 13–17 minutes for 65,535 glyphs on a 3-core runner.
+- About 13–18 minutes for 65,535 glyphs on a 3-core runner (extrapolated from run 35598894920).
 
 ## Command line
 

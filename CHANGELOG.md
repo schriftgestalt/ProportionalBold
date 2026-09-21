@@ -7,8 +7,8 @@
 
 ## plugin 1.0.0 (bundle 6) — 2026-09-20
 - First release considered verified: Glyphs 3.5 (3532) and Glyphs 4.1 (4107) on GitHub Actions macOS runners, GUI and headless
-  (run 35503951963): plugin loads, menu item present, 413/415 test glyphs emboldened, 1 fallback, 0 failed, output identical
-  between versions, IoU 0.994 against the command-line tool.
+  (run 35503951963): plugin loads, menu item present, 413/415 test glyphs emboldened, 1 fallback, 0 failed; output of the two
+  versions at mean IoU 0.9998, minimum 0.9949; vs the command-line tool mean 0.994, minimum 0.980 (corrected 2026-09-21).
 - Same code as 0.1.4; version bump and README only. Measured effect vs the designer's Bold (Noto Sans CJK TC): IoU 0.831 vs 0.829
   for one Offset Curve value; closed counters 23.9 % vs 28.6 % on 318 CJK glyphs, 18.4 % vs 22.1 % on 412 glyphs.
 

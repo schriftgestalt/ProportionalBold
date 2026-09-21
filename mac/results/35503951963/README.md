@@ -11,7 +11,7 @@ https://github.com/fanzhixiang777/ProportionalBold/actions/runs/35503951963 — 
 | headless: stem_after_offset (reopened file) | 1.405–1.496, PASS | 1.405–1.496, PASS |
 | headless: corners, master, layers, save/reopen | PASS | PASS |
 | headless: timing | 5.3 s / 414 → ~14 min per 65,535 | 5.1 s / 414 → ~13 min |
-| propbold-compare: IoU plugin vs CLI | mean 0.9939, min 0.9802, PASS | mean 0.9939, min 0.9802, PASS |
+| propbold-compare: IoU plugin vs CLI (413 glyphs; cid43205 excluded) | mean 0.9939, min 0.9802, PASS | mean 0.9939, min 0.9801, PASS (corrected 2026-09-21: floored) |
 | vs designer Bold, 412 glyphs: IoU plugin / CLI / single offset | 0.8313 / 0.8318 / 0.8287 | 0.8313 / 0.8318 / 0.8287 |
 | counters closed vs designer, 412 glyphs | 18.4 % / 17.5 % / 22.1 % | same |
 | counters closed vs designer, 318 CJK | 23.9 % / 22.6 % / 28.6 % | same |
