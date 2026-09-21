@@ -34,7 +34,7 @@ Select the master you want to embolden, then *Edit > Proportional Bold → New M
 
 ## Verified on
 
-Glyphs 3.5 (build 3532) and Glyphs 4.1 (build 4107), on GitHub Actions macOS runners, headless and in the GUI: plugin loads, menu item present, 413 of 415 test glyphs emboldened, 1 fallback, 0 failures, output identical between the two versions and equal to the command-line tool to IoU 0.994. Logs and numbers: [mac/results/](mac/results/).
+Glyphs 3.5 (build 3532) and Glyphs 4.1 (build 4107), on GitHub Actions macOS runners, headless and in the GUI: plugin loads, menu item present, 413 of 415 test glyphs emboldened, 1 fallback, 0 failures. The two versions' output agrees per glyph at mean IoU 0.9998, minimum 0.9949 (292 of 414 glyphs identical); against the command-line tool, mean IoU 0.994, minimum 0.980. Logs and numbers: [mac/results/](mac/results/).
 
 ## Known limits
 

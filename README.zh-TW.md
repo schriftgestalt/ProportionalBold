@@ -34,7 +34,7 @@ Glyphs 3 與 Glyphs 4 的外掛。你只給一個數字——目標筆畫比例�
 
 ## 驗證環境
 
-Glyphs 3.5（build 3532）與 Glyphs 4.1（build 4107），GitHub Actions 的 macOS runner，無頭與 GUI 都跑：外掛載入、選單項目出現、415 個測試字中 413 個加粗、1 個 fallback、0 個失敗，兩個版本輸出完全相同，與命令列工具的 IoU 0.994。紀錄與數字：[mac/results/](mac/results/)。
+Glyphs 3.5（build 3532）與 Glyphs 4.1（build 4107），GitHub Actions 的 macOS runner，無頭與 GUI 都跑：外掛載入、選單項目出現、415 個測試字中 413 個加粗、1 個 fallback、0 個失敗。兩個版本的輸出逐字比對：IoU 平均 0.9998、最低 0.9949（414 字中 292 字完全相同）；與命令列工具相比，IoU 平均 0.994、最低 0.980。紀錄與數字：[mac/results/](mac/results/)。
 
 ## 已知限制
 
