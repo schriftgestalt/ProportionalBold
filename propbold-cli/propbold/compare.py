@@ -122,14 +122,24 @@ def main(argv=None):
     sd = [abs((r['stem_plugin'] or 0) - (r['stem_cli'] or 0)) for r in ok]
     print(f"stem plugin==CLI within 1 unit: {sum(1 for x in sd if x <= 1)} of {len(ok)}; fallback glyphs plugin {sum(r['fallback_plugin'] for r in ok)}, CLI {sum(r['fallback_cli'] for r in ok)}")
     if gt_gs is not None:
-        A = [r for r in ok if r.get("iou_plugin_gt") is not None]
+        # every glyph that has a designer counterpart, whether or not the plugin-vs-CLI IoU was computable
+        A = [r for r in rows if "error" not in r and "counters_gt" in r]
         for label, rs in (("all", A), ("CJK", [r for r in A if r["cjk"]])):
             if not rs:
                 continue
-            print(f"vs designer weight, {label} (n={len(rs)}): mean IoU plugin {np.mean([r['iou_plugin_gt'] for r in rs]):.4f}  "
-                  f"CLI {np.mean([r['iou_cli_gt'] for r in rs]):.4f}  single-offset d={naive_d:.1f} {np.mean([r['iou_naive_gt'] for r in rs]):.4f} | "
-                  f"counters closed vs designer: plugin {100*np.mean([r['counters_plugin'] < r['counters_gt'] for r in rs]):.1f}%  "
-                  f"CLI {100*np.mean([r['counters_cli'] < r['counters_gt'] for r in rs]):.1f}%  single-offset {100*np.mean([r['counters_naive'] < r['counters_gt'] for r in rs]):.1f}%")
+            means = {}
+            for key in ("iou_plugin_gt", "iou_cli_gt", "iou_naive_gt"):
+                vals = [r[key] for r in rs if r.get(key) is not None]
+                means[key] = float(np.mean(vals)) if vals else float("nan")
+            miss = sorted({r["name"] for r in rs for key in means if r.get(key) is None})
+            closed = {k: 100 * np.mean([r[k] < r["counters_gt"] for r in rs]) for k in ("counters_plugin", "counters_cli", "counters_naive")}
+            line = (f"vs designer weight, {label} (n={len(rs)}): mean IoU plugin {means['iou_plugin_gt']:.4f}  "
+                    f"CLI {means['iou_cli_gt']:.4f}  single-offset d={naive_d:.1f} {means['iou_naive_gt']:.4f}")
+            if miss:
+                line += f" (IoU not computable, left out of these means only: {miss})"
+            line += (f" | counters closed vs designer: plugin {closed['counters_plugin']:.1f}%  "
+                     f"CLI {closed['counters_cli']:.1f}%  single-offset {closed['counters_naive']:.1f}%")
+            print(line)
     if a.json:
         with open(a.json, "w", encoding="utf-8") as fh:
             json.dump(rows, fh, ensure_ascii=False, indent=1, default=float)
