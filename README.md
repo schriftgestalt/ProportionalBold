@@ -30,7 +30,7 @@ So: the same overall fit as a single offset, and roughly one in six fewer dense 
 
 ## Use
 
-Select the master you want to embolden, then *Filter > Proportional Bold → New Master…*, enter the ratio (Bold ≈ 1.45, Black ≈ 1.75, measured on Noto Sans CJK), *Create Master*. A master named `<current> PropBold <ratio>` is appended; components are decomposed in it; each new layer stores `userData["proportionalBold"]` with the measured stem and offset. Glyphs with no measurable stem (dots, tiny marks) get the font's median stem and are listed in the report. Creating a master is not undoable — delete it in Font Info if you change your mind.
+Select the master you want to embolden, then *Edit > Proportional Bold → New Master…*, enter the ratio (Bold ≈ 1.45, Black ≈ 1.75, measured on Noto Sans CJK), *Create Master*. A master named `<current> PropBold <ratio>` is appended; components are decomposed in it; each new layer stores `userData["proportionalBold"]` with the measured stem and offset. Glyphs with no measurable stem (dots, tiny marks) get the font's median stem and are listed in the report. Creating a master is not undoable — delete it in Font Info if you change your mind.
 
 ## Verified on
 

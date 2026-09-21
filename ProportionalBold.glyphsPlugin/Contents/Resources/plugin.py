@@ -24,7 +24,7 @@ import objc
 import traceback
 import uuid
 
-from GlyphsApp import Glyphs, FILTER_MENU
+from GlyphsApp import Glyphs, EDIT_MENU
 from GlyphsApp.plugins import GeneralPlugin
 from AppKit import (NSMenuItem, NSAlert, NSTextField, NSView, NSMakeRect, NSClassFromString,
                     NSAlertFirstButtonReturn, NSFont)
@@ -59,7 +59,7 @@ class ProportionalBold(GeneralPlugin):
 	def start(self):
 		newMenuItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(self.name, self.run_, "")
 		newMenuItem.setTarget_(self)
-		Glyphs.menu[FILTER_MENU].append(newMenuItem)
+		Glyphs.menu[EDIT_MENU].append(newMenuItem)
 
 	# ------------------------------------------------------------------ UI: one number
 	@objc.python_method

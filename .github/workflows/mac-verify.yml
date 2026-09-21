@@ -205,22 +205,40 @@ jobs:
           cat mac/log/13-windows-final.txt
           shot 14-after-dialogs
 
-      - name: CHECK 0 for real – read the Filter menu with System Events
-        timeout-minutes: 2
+      - name: CHECK 0 for real – Edit menu lists the item, Filter menu does not (System Events)
+        id: menu
+        timeout-minutes: 3
         continue-on-error: true
         run: |
           T() { perl -e 'alarm shift @ARGV; exec @ARGV' "$@"; }
+          readmenu() {  # $1 = menu title, $2 = output file
+            T 30 osascript -e "tell application \"System Events\" to tell process \"Glyphs 3\" to get name of every menu item of menu \"$1\" of menu bar item \"$1\" of menu bar 1" > "$2" 2>&1 \
+              || T 30 osascript -e "tell application \"System Events\" to tell process \"Glyphs 3\" to get name of every menu item of menu \"$1\" of menu bar 1" >> "$2" 2>&1 || true
+          }
           T 20 osascript -e 'tell application "Glyphs 3" to activate' || true
           sleep 2
-          T 30 osascript -e 'tell application "System Events" to tell process "Glyphs 3" to get name of every menu item of menu "Filter" of menu bar item "Filter" of menu bar 1' > mac/log/20-filter-menu.txt 2>&1 \
-            || T 30 osascript -e 'tell application "System Events" to tell process "Glyphs 3" to get name of every menu item of menu "Filter" of menu bar 1' >> mac/log/20-filter-menu.txt 2>&1 || true
-          if grep -q "Proportional Bold" mac/log/20-filter-menu.txt; then echo "PASS  0.menu_item  Filter menu contains the plugin item" | tee -a mac/log/20-filter-menu.txt
-          else echo "FAIL  0.menu_item  plugin item not in Filter menu (see launch log)" | tee -a mac/log/20-filter-menu.txt; fi
-          T 15 osascript -e 'tell application "System Events" to tell process "Glyphs 3" to click menu bar item "Filter" of menu bar 1' || true
-          sleep 1
-          screencapture -x mac/log/21-filter-menu.png || true
-          T 15 osascript -e 'tell application "System Events" to key code 53' || true
+          readmenu Edit mac/log/20-edit-menu.txt
+          readmenu Filter mac/log/20-filter-menu.txt
+          rc=0
+          if grep -q "Proportional Bold" mac/log/20-edit-menu.txt; then
+            echo "PASS  0.menu_item_in_edit  Edit menu lists the plugin item" | tee -a mac/log/20-menu-check.txt
+          else
+            echo "FAIL  0.menu_item_in_edit  plugin item not in the Edit menu (see launch log)" | tee -a mac/log/20-menu-check.txt; rc=1
+          fi
+          if grep -q "Offset Curve" mac/log/20-filter-menu.txt && ! grep -q "Proportional Bold" mac/log/20-filter-menu.txt; then
+            echo "PASS  0.menu_item_not_in_filter  Filter menu read (Offset Curve listed), plugin item absent" | tee -a mac/log/20-menu-check.txt
+          else
+            echo "FAIL  0.menu_item_not_in_filter  plugin item still in the Filter menu, or the Filter menu could not be read" | tee -a mac/log/20-menu-check.txt; rc=1
+          fi
+          for m in Edit Filter; do
+            T 15 osascript -e "tell application \"System Events\" to tell process \"Glyphs 3\" to click menu bar item \"$m\" of menu bar 1" || true
+            sleep 1
+            screencapture -x "mac/log/21-$(echo $m | tr A-Z a-z)-menu.png" || true
+            T 15 osascript -e 'tell application "System Events" to key code 53' || true
+            sleep 1
+          done
           grep -n -i -E "python|proportional|traceback|error|principal|plugin" mac/log/glyphs3-launch.log | head -60 > mac/log/22-launch-log-grep.txt || true
+          exit $rc
 
       - name: Quit Glyphs 3
         timeout-minutes: 1
@@ -272,6 +290,13 @@ jobs:
           name: mac-verify-stage4-${{ github.run_id }}
           path: mac/log
           if-no-files-found: warn
+
+      - name: Gate – Edit menu lists the item, Filter menu does not
+        if: always()
+        timeout-minutes: 1
+        run: |
+          cat mac/log/20-menu-check.txt 2>/dev/null || echo "no menu check output"
+          test "${{ steps.menu.outcome }}" = "success"
 
   glyphs4:
     runs-on: macos-latest
@@ -518,22 +543,40 @@ jobs:
           cat mac/log/13-windows-final.txt
           shot 14-after-dialogs
 
-      - name: CHECK 0 for real – read the Filter menu with System Events
-        timeout-minutes: 2
+      - name: CHECK 0 for real – Edit menu lists the item, Filter menu does not (System Events)
+        id: menu
+        timeout-minutes: 3
         continue-on-error: true
         run: |
           T() { perl -e 'alarm shift @ARGV; exec @ARGV' "$@"; }
+          readmenu() {  # $1 = menu title, $2 = output file
+            T 30 osascript -e "tell application \"System Events\" to tell process \"Glyphs 4\" to get name of every menu item of menu \"$1\" of menu bar item \"$1\" of menu bar 1" > "$2" 2>&1 \
+              || T 30 osascript -e "tell application \"System Events\" to tell process \"Glyphs 4\" to get name of every menu item of menu \"$1\" of menu bar 1" >> "$2" 2>&1 || true
+          }
           T 20 osascript -e 'tell application "Glyphs 4" to activate' || true
           sleep 2
-          T 30 osascript -e 'tell application "System Events" to tell process "Glyphs 4" to get name of every menu item of menu "Filter" of menu bar item "Filter" of menu bar 1' > mac/log/20-filter-menu.txt 2>&1 \
-            || T 30 osascript -e 'tell application "System Events" to tell process "Glyphs 4" to get name of every menu item of menu "Filter" of menu bar 1' >> mac/log/20-filter-menu.txt 2>&1 || true
-          if grep -q "Proportional Bold" mac/log/20-filter-menu.txt; then echo "PASS  0.menu_item  Filter menu contains the plugin item" | tee -a mac/log/20-filter-menu.txt
-          else echo "FAIL  0.menu_item  plugin item not in Filter menu (see launch log)" | tee -a mac/log/20-filter-menu.txt; fi
-          T 15 osascript -e 'tell application "System Events" to tell process "Glyphs 4" to click menu bar item "Filter" of menu bar 1' || true
-          sleep 1
-          screencapture -x mac/log/21-filter-menu.png || true
-          T 15 osascript -e 'tell application "System Events" to key code 53' || true
+          readmenu Edit mac/log/20-edit-menu.txt
+          readmenu Filter mac/log/20-filter-menu.txt
+          rc=0
+          if grep -q "Proportional Bold" mac/log/20-edit-menu.txt; then
+            echo "PASS  0.menu_item_in_edit  Edit menu lists the plugin item" | tee -a mac/log/20-menu-check.txt
+          else
+            echo "FAIL  0.menu_item_in_edit  plugin item not in the Edit menu (see launch log)" | tee -a mac/log/20-menu-check.txt; rc=1
+          fi
+          if grep -q "Offset Curve" mac/log/20-filter-menu.txt && ! grep -q "Proportional Bold" mac/log/20-filter-menu.txt; then
+            echo "PASS  0.menu_item_not_in_filter  Filter menu read (Offset Curve listed), plugin item absent" | tee -a mac/log/20-menu-check.txt
+          else
+            echo "FAIL  0.menu_item_not_in_filter  plugin item still in the Filter menu, or the Filter menu could not be read" | tee -a mac/log/20-menu-check.txt; rc=1
+          fi
+          for m in Edit Filter; do
+            T 15 osascript -e "tell application \"System Events\" to tell process \"Glyphs 4\" to click menu bar item \"$m\" of menu bar 1" || true
+            sleep 1
+            screencapture -x "mac/log/21-$(echo $m | tr A-Z a-z)-menu.png" || true
+            T 15 osascript -e 'tell application "System Events" to key code 53' || true
+            sleep 1
+          done
           grep -n -i -E "python|proportional|traceback|error|principal|plugin" mac/log/glyphs4-launch.log | head -60 > mac/log/22-launch-log-grep.txt || true
+          exit $rc
 
       - name: Quit Glyphs 4
         timeout-minutes: 1
@@ -585,3 +628,10 @@ jobs:
           name: mac-verify-g4-${{ github.run_id }}
           path: mac/log
           if-no-files-found: warn
+
+      - name: Gate – Edit menu lists the item, Filter menu does not
+        if: always()
+        timeout-minutes: 1
+        run: |
+          cat mac/log/20-menu-check.txt 2>/dev/null || echo "no menu check output"
+          test "${{ steps.menu.outcome }}" = "success"

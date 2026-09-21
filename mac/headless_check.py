@@ -49,7 +49,7 @@ TESTFONT_OTF = os.path.join(REPO, "testdata", "NotoSansCJKtc-Regular-sub415.otf"
 TESTFONT_GLYPHS = os.path.join(REPO, "testdata", "NotoSansCJKtc-Regular-sub415.glyphs")
 EXPECTED = os.path.join(REPO, "testdata", "expected_sub415.json")
 
-from GlyphsApp import Glyphs, FILTER_MENU  # noqa: E402
+from GlyphsApp import Glyphs, FILTER_MENU, EDIT_MENU  # noqa: E402
 import objc  # noqa: E402
 
 results = {"mode": None, "glyphs_version": None, "build": None, "python": sys.version.split()[0], "checks": {}}
@@ -161,12 +161,17 @@ def main():
           "class %s" % ("found (loaded by Glyphs)" if loaded_by_glyphs else "NOT loaded by Glyphs; exec fallback used"))
     if MODE == "app":
         try:
-            titles = [item.title() for item in Glyphs.menu[FILTER_MENU].submenu().itemArray()]
-            check("0.menu_item", any("Proportional Bold" in t or "比例加粗" in t for t in titles), "Filter menu: %s" % titles[-6:])
+            def titles(menu):
+                return [item.title() for item in Glyphs.menu[menu].submenu().itemArray()]
+
+            def has_item(ts):
+                return any("Proportional Bold" in t or "比例加粗" in t or "比例太字" in t for t in ts)
+            in_edit, in_filter = has_item(titles(EDIT_MENU)), has_item(titles(FILTER_MENU))
+            check("0.menu_item", in_edit and not in_filter, "in Edit menu: %s; in Filter menu: %s" % (in_edit, in_filter))
         except Exception as e:
-            check("0.menu_item", False, "could not read Filter menu: %r" % e)
+            check("0.menu_item", False, "could not read the Edit/Filter menus: %r" % e)
     else:
-        skip("0.menu_item", "GUI-only (no Glyphs.menu under glyphs-cli); the workflow reads the Filter menu with System Events instead")
+        skip("0.menu_item", "GUI-only (no Glyphs.menu under glyphs-cli); the workflow reads the Edit and Filter menus with System Events instead")
     plugin = make_instance(cls)
 
     font, used = open_test_font()

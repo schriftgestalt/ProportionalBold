@@ -1,5 +1,8 @@
 # Changelog
 
+## plugin 1.0.1 (bundle 7) — 2026-09-21
+- Menu item moved from Filter to Edit at the maintainer's request (schriftgestalt/glyphs-packages PR #219). No other change.
+
 ## propbold-cli 0.2.0 — Windows 11 verified 2026-09-20 (65,535 glyphs in 541 s, ots clean, installs, Word renders); `propbold-compare --report` writes the reference-free hand-work list
 
 ## plugin 1.0.0 (bundle 6) — 2026-09-20
