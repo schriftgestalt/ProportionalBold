@@ -13,15 +13,15 @@
 	<key>CFBundleName</key>
 	<string>Proportional Bold</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.1</string>
+	<string>1.0.2</string>
 	<key>CFBundleVersion</key>
-	<string>7</string>
+	<string>8</string>
 	<key>UpdateFeedURL</key>
 	<string>https://raw.githubusercontent.com/fanzhixiang777/ProportionalBold/main/ProportionalBold.glyphsPlugin/Contents/Info.plist</string>
 	<key>productPageURL</key>
 	<string>https://github.com/fanzhixiang777/ProportionalBold</string>
 	<key>productReleaseNotes</key>
-	<string>1.0.1: menu item moved from Filter to Edit at the maintainer's request.</string>
+	<string>1.0.2: the ratio dialog labels the Bold/Black values as suggested settings; code comments point to the README instead of restating figures.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright 2026, Ez. MIT License.</string>
 	<key>NSPrincipalClass</key>

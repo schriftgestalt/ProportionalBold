@@ -1,21 +1,20 @@
 # encoding: utf-8
 ###########################################################################################################
 #
-#   Proportional Bold → New Master   (Glyphs 3 General Plugin)
+#   Proportional Bold → New Master   (Glyphs 3 and Glyphs 4 General Plugin)
 #
 #   Takes the currently selected master and creates a NEW master in which every glyph is
 #   emboldened by its OWN stem width:   d_g = (ratio - 1) / 2 * w_g
 #   (w_g measured on the glyph with layer.intersectionsBetweenPoints, outlines offset with
-#   Glyphs' own GSOffsetCurve — all vector, no bitmaps).
+#   Glyphs' own Offset Curve filter, GlyphsFilterOffsetCurve — all vector, no bitmaps).
 #
-#   Why: Filter > Offset Curve uses ONE number for the whole font. CJK Regular masters already
-#   encode a stroke hierarchy (simple glyphs ~80 units, dense glyphs ~45 units in Noto Sans CJK);
-#   a constant offset over-inks dense glyphs and closes their counters. A per-glyph offset that is
-#   proportional to the measured stem keeps the hierarchy the designer already drew.
+#   Why: Filter > Offset Curve uses ONE number for the whole font, while a CJK Regular master already
+#   encodes a stroke hierarchy (simple glyphs have thicker stems than dense ones); a constant offset
+#   over-inks dense glyphs and closes their counters. A per-glyph offset proportional to the measured
+#   stem keeps the hierarchy the designer already drew.
 #
-#   Evidence (Noto Sans CJK TC, 400 held-out ideographs, vector IoU against the designer's Bold):
-#   mean IoU is the same as a well-chosen single offset (0.854 vs 0.854), but the rate of closed
-#   counters drops from 31.5% to 22% (dense glyphs: 53% → 36%). See README for the full table.
+#   Measured effect, test setup and every figure: README.md, where each number names the run it comes
+#   from. These comments deliberately state no figures, so they cannot go stale.
 #   This plugin makes a DRAFT master for the designer to correct; it does not replace drawing.
 #
 ###########################################################################################################
@@ -29,13 +28,13 @@ from GlyphsApp.plugins import GeneralPlugin
 from AppKit import (NSMenuItem, NSAlert, NSTextField, NSView, NSMakeRect, NSClassFromString,
                     NSAlertFirstButtonReturn, NSFont)
 
-DEFAULT_RATIO = 1.45        # Bold ≈ 1.45, Black ≈ 1.75 (measured on Noto Sans CJK: Bold/Regular stems)
+DEFAULT_RATIO = 1.45        # suggested setting for Bold; suggested settings and measured designer ratios: README.md
 PCT = 30                    # percentile of scan-line ink runs used as the glyph's stem width
 N_LINES = 24                # scan lines per direction
 MAX_RUN_FRAC = 0.35         # ignore ink runs longer than this fraction of the bbox (junctions, along-stroke runs)
 D_CAP = 0.6                 # never offset more than 0.6 × stem (safety for tiny/odd glyphs)
-BOX_GROWTH = 1.0            # 1.0 = plain offset. <1.0 shrinks the skeleton so the bbox grows only
-                            # BOX_GROWTH × 2d (Canon US5959634 style). Measured on Noto: 1.0 fits best.
+BOX_GROWTH = 1.0            # 1.0 = plain offset, the value every verified run used. <1.0 shrinks the skeleton
+                            # so the bbox grows only BOX_GROWTH × 2d (Canon US5959634 style); never verified.
 # Unmeasurable glyphs (tiny dots, marks: fewer than 6 ink runs) get the font's median measured stem
 # as a FALLBACK stem, counted separately as "fallback" — never as done, never as an offset of 0.
 
@@ -68,7 +67,7 @@ class ProportionalBold(GeneralPlugin):
 		alert.setMessageText_("Proportional Bold → New Master")
 		alert.setInformativeText_(
 			"Target stem ratio (new stem / current stem), applied per glyph.\n"
-			"Bold ≈ 1.45, Black ≈ 1.75 (measured on Noto Sans CJK).\n"
+			"suggested: Bold ≈ 1.45, Black ≈ 1.75\n"
 			"A new master is added; the current master is not changed.")
 		alert.addButtonWithTitle_("Create Master")
 		alert.addButtonWithTitle_("Cancel")

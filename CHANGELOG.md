@@ -1,5 +1,10 @@
 # Changelog
 
+## plugin 1.0.2 (bundle 8) — 2026-09-21
+- Text only. The ratio dialog says "suggested: Bold ≈ 1.45, Black ≈ 1.75" (it said "measured on Noto Sans CJK"). The header
+  and constant comments in plugin.py and in propbold-cli's spec.py point to the README instead of restating figures.
+  propbold-cli keeps version 0.2.0: its change is comment-only.
+
 ## plugin 1.0.1 (bundle 7) — 2026-09-21
 - Menu item moved from Filter to Edit at the maintainer's request (schriftgestalt/glyphs-packages PR #219). No other change.
 
