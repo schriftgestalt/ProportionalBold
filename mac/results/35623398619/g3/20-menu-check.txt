@@ -1,0 +1,2 @@
+PASS  0.menu_item_in_edit  Edit menu lists the plugin item
+PASS  0.menu_item_not_in_filter  Filter menu read (Offset Curve listed), plugin item absent

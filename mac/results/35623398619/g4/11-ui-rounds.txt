@@ -1,0 +1,17 @@
+--- round 1 16:07:16
+ticked checkbox
+clicked 'Continue Trial'
+window: Start Window | buttons: missing value, missing value, Create Document
+   text: Prepare glyphs for
+
+welcome window exists: false
+--- round 2 16:07:24
+window: Start Window | buttons: missing value, missing value, Create Document
+   text: Prepare glyphs for
+
+welcome window exists: false
+--- round 3 16:07:30
+window: Start Window | buttons: missing value, missing value, Create Document
+   text: Prepare glyphs for
+
+welcome window exists: false

@@ -1,0 +1,1 @@
+1:2026-09-21 16:06:46.643 Glyphs 3[1946:9388] principalClass time: 0.674864  ProportionalBold.glyphsPlugin
