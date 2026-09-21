@@ -1,12 +1,9 @@
 Why propbold-compare leaves cid43205 (U+967A 険) out of the plugin-vs-CLI IoU — run 35598894920, both jobs
-
 Glyphs 3.5 (3532): plugin outline 4 contours, area 502388 (clean: simplify ok); CLI outline 4 contours, area 502465; stem 67.0, offset 15.07
    intersection(plugin, CLI): FAILS — skia-pathops: operation did not succeed
    union(plugin, CLI): area 451072 — smaller than either outline, so the union is corrupt too
-
 Glyphs 4.1 (4107): plugin outline 4 contours, area 502388 (clean: simplify ok); CLI outline 4 contours, area 502465; stem 67.0, offset 15.07
    intersection(plugin, CLI): FAILS — skia-pathops: operation did not succeed
    union(plugin, CLI): area 451072 — smaller than either outline, so the union is corrupt too
-
 Both outlines are individually valid and their areas differ by 0.015 %; most edges coincide, which is the case where the
-boolean engine breaks down. The glyph is still in the hand-work report (counters 2 -> 1); only its IoU is missing.
+boolean engine breaks down. The glyph is in the hand-work report (counters 2 -> 1) and in the designer-Bold statistics; only its IoU against the CLI is missing.

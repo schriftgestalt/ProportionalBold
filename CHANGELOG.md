@@ -3,14 +3,16 @@
 ## plugin 1.0.1 (bundle 7) — 2026-09-21
 - Menu item moved from Filter to Edit at the maintainer's request (schriftgestalt/glyphs-packages PR #219). No other change.
 
-## propbold-cli 0.2.0 — Windows 11 verified 2026-09-20 (65,535 glyphs in 541 s, ots clean, installs, Word renders); `propbold-compare --report` writes the reference-free hand-work list
+## propbold-cli 0.2.0 — Windows 11 verified 2026-09-20 (65,535 glyphs in 541 s, ots clean, installs, Word renders — mac/results/windows-0.2.0.md); `propbold-compare --report` writes the reference-free hand-work list
 
 ## plugin 1.0.0 (bundle 6) — 2026-09-20
 - First release considered verified: Glyphs 3.5 (3532) and Glyphs 4.1 (4107) on GitHub Actions macOS runners, GUI and headless
   (run 35503951963): plugin loads, menu item present, 413/415 test glyphs emboldened, 1 fallback, 0 failed; output of the two
-  versions at mean IoU 0.9998, minimum 0.9949; vs the command-line tool mean 0.994, minimum 0.980 (corrected 2026-09-21).
-- Same code as 0.1.4; version bump and README only. Measured effect vs the designer's Bold (Noto Sans CJK TC): IoU 0.831 vs 0.829
-  for one Offset Curve value; closed counters 23.9 % vs 28.6 % on 318 CJK glyphs, 18.4 % vs 22.1 % on 412 glyphs.
+  versions at mean IoU 0.9998, minimum 0.9949; vs the command-line tool mean IoU 0.994, minimum 0.980 over 413 glyphs,
+  険 excluded (corrected 2026-09-21).
+- Same code as 0.1.4; version bump and README only. Measured effect vs the designer's Bold (Noto Sans CJK TC, Glyphs 3.5 output of run 35598894920):
+  mean IoU 0.831 vs 0.829 for one Offset Curve value; closed counters 23.8 % vs 28.5 % on 319 CJK glyphs, 18.4 % vs 22.0 %
+  on 413 glyphs (corrected 2026-09-21).
 
 ## plugin 0.1.2 (bundle version 3) — unreleased, awaiting the Mac run
 - `emboldenFont(font, ratio, master=None, glyphLimit=None)` is the headless entry point; the menu item only adds the dialog.
@@ -37,5 +39,6 @@
 - CLI `MITER_LIMIT = 1.5`: closest pathops reproduction of Glyphs' short diagonal tips that keeps right angles square.
 - In-Glyphs bounds check replaced by `1.stem_after_offset` (bold stem / regular stem in [1.38, 1.56]);
   cross-engine agreement is `propbold-compare` (IoU plugin vs CLI, counters vs the designer's weight), workflow step 50.
-- Real plugin output (Glyphs 3.5 build 3532, 413 glyphs): IoU plugin vs CLI 0.993; vs designer Bold, CJK: IoU 0.855,
-  counters closed 23.9 % (plugin) vs 28.6 % (single global offset).
+- Real plugin output (Glyphs 3.5 build 3532, run 35598894920): IoU plugin vs CLI mean 0.994, minimum 0.980 over 413 glyphs,
+  険 excluded; vs designer Bold, 319 CJK: mean IoU 0.855, counters closed 23.8 % (plugin) vs 28.5 % (single global offset)
+  (corrected 2026-09-21).

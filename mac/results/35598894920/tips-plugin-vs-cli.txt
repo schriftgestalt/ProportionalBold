@@ -2,6 +2,7 @@ Tip extents: plugin 1.0.1 output (Glyphs 3.5, run 35598894920) vs propbold-cli 0
 glyphs: 414, sides: 1656 (left, bottom, right, top); + = the plugin's outline reaches further out
 sides where the plugin reaches further by more than 3 units: 84; where the CLI does: 79
 largest plugin-further: 35.2 units (exact 35.121); largest CLI-further: 11.4 units (exact 11.308)  [maxima rounded up]
+against the designer-drawn Bold, on the 163 sides where plugin and CLI differ by more than 3 units: the plugin's extent is closer on 97, the CLI's on 66; mean distance to the designer's extent: plugin 9.5, CLI 9.9 units
    cid09749  U+4EBA 人  left   35.1  bottom    0.2  right   -0.6  top   -0.8
    cid00089  U+0078 x  left   19.6  bottom    0.4  right   20.7  top    0.4
    cid00076  U+006B k  left   -0.2  bottom   -0.2  right   19.9  top   -0.2
@@ -12,4 +13,3 @@ largest plugin-further: 35.2 units (exact 35.121); largest CLI-further: 11.4 uni
    cid42578  U+947F 鑿  left   17.5  bottom   -0.2  right    0.0  top   -0.2
    cid22540  U+6B3B 欻  left   -0.4  bottom   10.5  right   17.0  top   -0.2
    cid13293  U+5745 坅  left   -0.3  bottom    0.4  right   15.7  top   -0.3
-   largest CLI-further side: cid27276 U+75B5 疵 [-0.416, -11.308, -0.094, 0.107]

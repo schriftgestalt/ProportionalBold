@@ -4,21 +4,21 @@ A Glyphs 3 and Glyphs 4 plugin. You give it one number — the target stem ratio
 
 ![Regular, single Offset Curve, Proportional Bold, designer's Bold — eight dense glyphs](docs/before-after.png)
 
-Rows: the Regular master; Filter > Offset Curve with one value for the whole font; this plugin at ratio 1.45 (its actual output); the designer-drawn Bold of Noto Sans CJK TC for reference.
+Rows: the Regular master; Filter > Offset Curve with one value for the whole font; this plugin at ratio 1.45 (its actual output: Glyphs 3.5, run 35503951963); the designer-drawn Bold of Noto Sans CJK TC for reference.
 
 ## Why
 
-`Filter > Offset Curve` adds the same amount to every glyph. A CJK Regular master already carries a stroke hierarchy — in Noto Sans CJK TC the stem of 一 is 82 units, the stem of 灣 is 46 — so one constant makes dense glyphs relatively much bolder and closes their counters. This plugin measures each glyph's stem on scan lines and offsets it by `(ratio − 1) / 2 × its own stem`, using Glyphs' own Offset Curve engine. The rule is old (Sharp 1998, Canon 1993 patents, both expired); the plugin only puts it into the font editor.
+`Filter > Offset Curve` adds the same amount to every glyph. A CJK Regular master already carries a stroke hierarchy — in Noto Sans CJK TC the stem of 一 is 82 units, the stem of 灣 is 46 (as the plugin measures them, run 35598894920) — so one constant makes dense glyphs relatively much bolder and closes their counters. This plugin measures each glyph's stem on scan lines and offsets it by `(ratio − 1) / 2 × its own stem`, using Glyphs' own Offset Curve engine. The rule is old (Sharp 1998, Canon 1993 patents, both expired); the plugin only puts it into the font editor.
 
 ## What it is worth, measured
 
-Real plugin output, Noto Sans CJK TC Regular → ratio 1.45, compared with the designer-drawn Bold ([run 35503951963](mac/results/35503951963/)):
+Real plugin output (Glyphs 3.5), Noto Sans CJK TC Regular → ratio 1.45, compared with the designer-drawn Bold ([run 35598894920](mac/results/35598894920/)):
 
 | | this plugin | one Offset Curve value |
 |---|---|---|
-| IoU against the designer's Bold, 412 glyphs | 0.831 | 0.829 |
-| glyphs with a counter closed that the designer kept open, 412 glyphs | 18.4 % | 22.1 % |
-| same, 318 CJK ideographs | 23.9 % | 28.6 % |
+| mean IoU against the designer's Bold, 413 glyphs | 0.831 | 0.829 |
+| glyphs with a counter closed that the designer kept open, 413 glyphs | 18.4 % | 22.0 % |
+| same, 319 CJK ideographs | 23.8 % | 28.5 % |
 
 So: the same overall fit as a single offset, and roughly one in six fewer dense glyphs with a closed counter. Nothing stronger than that. The designer still redraws junctions, re-spaces strokes and fixes every dense glyph by hand; this saves the first pass.
 
@@ -30,16 +30,16 @@ So: the same overall fit as a single offset, and roughly one in six fewer dense 
 
 ## Use
 
-Select the master you want to embolden, then *Edit > Proportional Bold → New Master…*, enter the ratio (Bold ≈ 1.45, Black ≈ 1.75, measured on Noto Sans CJK), *Create Master*. A master named `<current> PropBold <ratio>` is appended; components are decomposed in it; each new layer stores `userData["proportionalBold"]` with the measured stem and offset. Glyphs with no measurable stem (dots, tiny marks) get the font's median stem and are listed in the report. Creating a master is not undoable — delete it in Font Info if you change your mind.
+Select the master you want to embolden, then *Edit > Proportional Bold → New Master…*, enter the ratio (suggested settings: Bold ≈ 1.45, Black ≈ 1.75; for reference, the designer-drawn Bold and Black of Noto Sans CJK TC have a median 1.53× and 1.83× the Regular's stem over 20,976 ideographs — [measurement](mac/results/noto-stem-ratios/)), *Create Master*. A master named `<current> PropBold <ratio>` is appended; components are decomposed in it; each new layer stores `userData["proportionalBold"]` with the measured stem and offset. Glyphs with no measurable stem (dots, tiny marks) get the font's median stem and are listed in the report. Creating a master is not undoable — delete it in Font Info if you change your mind.
 
 ## Verified on
 
-Glyphs 3.5 (build 3532) and Glyphs 4.1 (build 4107), on GitHub Actions macOS runners, headless and in the GUI: plugin loads, menu item present, 413 of 415 test glyphs emboldened, 1 fallback, 0 failures. The two versions' output agrees per glyph at mean IoU 0.9998, minimum 0.9949 (292 of 414 glyphs identical); against the command-line tool, mean IoU 0.994, minimum 0.980. Logs and numbers: [mac/results/](mac/results/).
+Glyphs 3.5 (build 3532) and Glyphs 4.1 (build 4107), on GitHub Actions macOS runners, headless and in the GUI: plugin loads, menu item present, 413 of 415 test glyphs emboldened, 1 fallback, 0 failures. The two versions' output agrees per glyph at mean IoU 0.9998, minimum 0.9949 (292 of 414 glyphs identical); against the command-line tool, mean IoU 0.994, minimum 0.980 over 413 glyphs (険 U+967A excluded: skia-pathops cannot intersect its two outlines). Run 35598894920; logs and numbers: [mac/results/](mac/results/).
 
 ## Known limits
 
 - Glyphs with fewer than six ink runs on the scan lines (dots, tiny marks) get the median stem, not their own.
-- Sharp diagonal tips (撇, 捺) come out shorter than the command-line tool's, which uses a different offset engine; the area agrees at mean IoU 0.994, minimum 0.980 (run 35598894920).
+- Sharp diagonal tips (撇, 捺) differ from the command-line tool's, which uses a different offset engine, in both directions: the plugin's tip reaches up to 35.2 units further (人), the CLI's up to 11.4; the area agrees at mean IoU 0.994, minimum 0.980 over 413 glyphs, 険 excluded (run 35598894920).
 - Dense glyphs still need hand work; junctions are not treated.
 - About 13–18 minutes for 65,535 glyphs on a 3-core runner (extrapolated from run 35598894920).
 

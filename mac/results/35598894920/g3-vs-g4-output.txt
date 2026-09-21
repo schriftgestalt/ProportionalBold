@@ -1,15 +1,15 @@
-Plugin 1.0.1 output, Glyphs 3.5 (3532) vs Glyphs 4.1 (4107), run 35598894920, new master of the 415-glyph test font
-glyphs compared: 414
-identical (IoU > 0.9999): 292   mean IoU 0.99980   min IoU 0.9949
+Plugin output, Glyphs 3.5 (3532) vs Glyphs 4.1 (4107), run 35598894920, new master of the 415-glyph test font
+glyphs compared: 414 (all glyphs with outlines)
+identical (IoU > 0.9999): 292   mean IoU 0.99980   minimum IoU 0.9949 (floored)
 measured stem differs in 1 glyph(s): [('cid14295', 'U+599A', 71.86193, 73)]
-least similar glyphs (the offset engine / removeOverlap differ slightly between the two versions at the same offset):
+least similar glyphs (the two versions' Offset Curve / removeOverlap differ slightly at the same offset):
    cid47422   U+9F7B  IoU 0.9949  stem 54 / 54
    cid14295   U+599A  IoU 0.9953  stem 71.86193 / 73
-   cid38503   U+8BEA  IoU 0.9955  stem 65 / 65
+   cid38503   U+8BEA  IoU 0.9954  stem 65 / 65
    cid47388   U+9F6E  IoU 0.9958  stem 57 / 57
-   cid22146   U+6A5F  IoU 0.9963  stem 61.09193 / 61.09193
-   cid24819   U+7063  IoU 0.9970  stem 46 / 46
+   cid22146   U+6A5F  IoU 0.9962  stem 61.09193 / 61.09193
+   cid24819   U+7063  IoU 0.9969  stem 46 / 46
    cid20418   U+6668  IoU 0.9974  stem 54 / 54
-   cid00095   U+007E  IoU 0.9975  stem 69.50969 / 69.50969
+   cid00095   U+007E  IoU 0.9974  stem 69.50969 / 69.50969
    cid00032   U+003F  IoU 0.9983  stem 83.39966 / 83.39966
    cid32505   U+8077  IoU 0.9986  stem 60 / 60

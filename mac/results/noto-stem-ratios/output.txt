@@ -1,0 +1,8 @@
+Designer stem ratios of Noto Sans CJK TC, measured with propbold.core.stem_width (repo commit 35a5f6b)
+  Regular NotoSansCJKtc-Regular.otf  sha256 dce08bd4fd91aa8aa76ed8fea4b694c2dfb8550f67871e326843212ddbeb88b4
+  Bold    NotoSansCJKtc-Bold.otf  sha256 3ee160e5015106e3ec1a394301df54fa9bbbf8a251519984aec5c0abc50840c0
+  Black   NotoSansCJKtc-Black.otf  sha256 8d0b82a379fac186ea5ec7ebf00828a5e58c32b3a5a917298f768299707d076d
+population: CJK Unified Ideographs U+4E00–U+9FFF mapped in all three fonts: 20976 code points
+Bold / Regular: n=20976  median 1.5316  p25 1.4911  p75 1.5652  mean 1.5220  min 0.7627  max 2.1739
+Black / Regular: n=20976  median 1.8305  p25 1.7611  p75 1.8811  mean 1.8150  min 0.7635  max 2.5649
+runtime 348 s
