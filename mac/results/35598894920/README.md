@@ -25,4 +25,4 @@ Excluded from the plugin-vs-CLI IoU in both jobs: cid43205 U+967A 険 — skia-p
 
 Designer-Bold statistics with the fixed propbold-compare (commit 35a5f6b, `g3/50-compare-sandbox.txt`), which now includes 険: 413 glyphs / 319 CJK; mean IoU plugin 0.8313 / single offset 0.8287; counters closed 18.4 % vs 22.0 % (all), 23.8 % vs 28.5 % (CJK). The runner's `50-compare.txt` above was printed by the earlier tool (412 / 318). `analysis.py` regenerates `g3-vs-g4-output.txt`, `tips-plugin-vs-cli.txt` and `excluded-cid43205.txt` from the artifacts.
 
-Screenshots (`21-edit-menu.png`, `21-filter-menu.png`) and the `.glyphs` outputs stay in the workflow artifacts; Bugsnag lines removed from the logs.
+The two plugin outputs are committed here, copied byte-for-byte from the workflow artifacts so `analysis.py` stays reproducible after the artifacts expire: `g3/propbold-check-cli-3532.glyphs` (sha256 f2246f7b26c5942736a03f3245243977f79f922225a651cde64d3729547dc4c3), `g4/propbold-check-cli-4107.glyphs` (sha256 0500a5079b06d594865dfa8c6033c5d04a09af5272707a222bacfb8f6943bd88). Screenshots stay in the artifacts; Bugsnag lines removed from the logs.

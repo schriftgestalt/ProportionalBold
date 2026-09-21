@@ -2,9 +2,11 @@
 """
 analysis.py — the numbers quoted from run 35598894920 that propbold-compare does not print itself.
 
-Inputs are the run's plugin outputs (workflow artifacts mac-verify-stage4-35598894920 and mac-verify-g4-35598894920,
-file propbold-check-cli-<build>.glyphs) and the designer-drawn Noto Sans CJK TC Bold:
+Inputs: the run's two plugin outputs, committed next to this script (g3/propbold-check-cli-3532.glyphs and
+g4/propbold-check-cli-4107.glyphs, copied byte-for-byte from the workflow artifacts), and the designer-drawn
+Noto Sans CJK TC Bold (https://github.com/notofonts/noto-cjk/raw/main/Sans/OTF/TraditionalChinese/NotoSansCJKtc-Bold.otf):
 
+    cd mac/results/35598894920
     python analysis.py g3/propbold-check-cli-3532.glyphs g4/propbold-check-cli-4107.glyphs NotoSansCJKtc-Bold.otf
 
 Writes, next to this script: g3-vs-g4-output.txt, tips-plugin-vs-cli.txt, excluded-cid43205.txt.
