@@ -1,0 +1,73 @@
+{
+ "mode": "cli",
+ "glyphs_version": "4.1",
+ "build": 4107.0,
+ "python": "3.14.6",
+ "checks": {
+  "0.plugin_class_loaded": {
+   "ok": true,
+   "detail": "class found (loaded by Glyphs)"
+  },
+  "0.menu_item": {
+   "ok": null,
+   "skipped": "GUI-only (no Glyphs.menu under glyphs-cli); the workflow reads the Edit and Filter menus with System Events instead"
+  },
+  "0.testfont_open": {
+   "ok": true,
+   "detail": "NotoSansCJKtc-Regular-sub415.glyphs: 415 glyphs"
+  },
+  "1.no_failures": {
+   "ok": true,
+   "detail": "done 413 fallback 1 skipped 1 failed 0 []"
+  },
+  "1.fallback_rare": {
+   "ok": true,
+   "detail": "1 unmeasurable glyphs given the median stem: ['cid00015']"
+  },
+  "1.median_stem": {
+   "ok": true,
+   "detail": "65.0 vs expected 63.0"
+  },
+  "1.corners_not_rounded": {
+   "ok": true,
+   "detail": "on-curve nodes regular -> bold: unchanged within 30%"
+  },
+  "2.master_added": {
+   "ok": true,
+   "detail": "masters 1 -> 2, ids distinct True"
+  },
+  "2.layers_have_paths": {
+   "ok": true,
+   "detail": "new-master layers without paths: 0 []"
+  },
+  "2.save_reopen": {
+   "ok": true,
+   "detail": "saved /Users/runner/work/ProportionalBold/ProportionalBold/mac/log/propbold-check-cli-4107.glyphs; masters 2; axes 100.0 -> 100.0"
+  },
+  "1.stem_after_offset": {
+   "ok": true,
+   "detail": "reopened file: bold/regular stem within [1.38, 1.56] for 11 glyphs; [('一', 1.439), ('十', 1.442), ('日', 1.453), ('國', 1.458), ('永', 1.405), ('人', 1.496), ('語', 1.438), ('臺', 1.44), ('灣', 1.441), ('龜', 1.449), ('體', 1.463)]; off: []"
+  },
+  "3.timing": {
+   "ok": true,
+   "detail": "5.1s for 414 glyphs -> 12.3 ms/glyph -> ~13 min for 65,535 (limit 30)"
+  }
+ },
+ "summary": {
+  "master": "Regular PropBold 1.45",
+  "masterId": "82A27626-7C74-4659-A7D4-2BCCF2BFDA80",
+  "done": 413,
+  "fallback": 1,
+  "fallbackGlyphs": [
+   "cid00015"
+  ],
+  "skipped": 1,
+  "failed": 0,
+  "failures": [],
+  "medianStem": 65.0,
+  "medianStemOut": 94.25,
+  "seconds": 5.078138113021851
+ },
+ "seconds": 5.0781590938568115,
+ "testfont": "/Users/runner/work/ProportionalBold/ProportionalBold/testdata/NotoSansCJKtc-Regular-sub415.glyphs"
+}

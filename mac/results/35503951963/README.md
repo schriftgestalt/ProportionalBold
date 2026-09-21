@@ -18,4 +18,6 @@ https://github.com/fanzhixiang777/ProportionalBold/actions/runs/35503951963 — 
 | diag: detached-layer bounds (copy/copyDecomposedLayer) | 0,0,0,0 (needs attach before measuring) | correct — Glyphs 4 fixed it; the plugin attaches anyway |
 | headless OTF import | `Didn't find importer plugin for file type: public.opentype-font` → the .glyphs copy is used | same |
 
-Plugin outputs are identical between the two versions to the last unit reported. Bugsnag noise removed from logs; screenshots and `.glyphs` outputs stay in the artifacts.
+Plugin outputs are identical between the two versions to the last unit reported.
+
+**Erratum (2026-09-21):** not identical — 292 of 414 glyphs identical, mean IoU 0.9998, min 0.9949 between the two versions' outputs; see `mac/results/35598894920/g3-vs-g4-output.txt`. Bugsnag noise removed from logs; screenshots and `.glyphs` outputs stay in the artifacts.

@@ -1,0 +1,6 @@
+window: Welcome to Glyphs | buttons: Purchase License, Continue Trial | checkboxes: I have read the license agreement.
+   text: This copy of Glyphs is not registered. The test version will work for 30 days until October 21, 2026.
+You can activate this version by purchasing a license at glyphsapp.com.
+window: Start Window | buttons: missing value, missing value, Create Document | checkboxes: Show window on startup
+   text: Prepare glyphs for
+

@@ -1,0 +1,6 @@
+using /Users/runner/Library/Application Support/Glyphs 4/Repositories/GlyphsPython/Python.framework
+python 3.14.6 pyobjc 12.2.1
+glyphs-cli at: /Users/runner/Library/Application Support/Glyphs 4/Repositories/GlyphsPython/Python.framework/Versions/3.14/bin/glyphs
+0.6.2
+compare venv ok 0.2.0
+GlyphsPython

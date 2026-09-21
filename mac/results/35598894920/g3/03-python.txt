@@ -1,0 +1,5 @@
+using the Glyphs Python module at /Users/runner/Library/Application Support/Glyphs 3/Repositories/GlyphsPythonPlugin/Python.framework
+python 3.11.9 pyobjc 10.2
+glyphs-cli at: /Users/runner/Library/Application Support/Glyphs 3/Repositories/GlyphsPythonPlugin/Python.framework/Versions/3.11/bin/glyphs
+0.6.2
+GlyphsPythonPlugin
