@@ -181,7 +181,6 @@ class ProportionalBold(GeneralPlugin):
 			work.layerId = newMasterId
 			work.associatedMasterId = newMasterId
 			glyph.layers[newMasterId] = work
-			work = glyph.layers[newMasterId]
 		else:
 			glyph.layers.append(work)
 			temporary = True
