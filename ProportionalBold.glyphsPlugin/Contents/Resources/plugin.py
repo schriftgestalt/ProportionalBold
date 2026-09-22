@@ -116,13 +116,15 @@ class ProportionalBold(GeneralPlugin):
 		"""Per-glyph stem width in font units: PCT-th percentile of ink-run lengths on N_LINES
 		horizontal and N_LINES vertical scan lines (runs longer than MAX_RUN_FRAC × bbox ignored).
 		Requires an overlap-free layer (call removeOverlap first)."""
-		b = layer.bounds
-		x0, y0, W, H = b.origin.x, b.origin.y, b.size.width, b.size.height
-		if W < 1 or H < 1:
-			return None
+		#b = layer.bounds
 		runs = []
 		layer = layer.copyDecomposedLayer()
 		layer.flattenOutlinesRemoveOverlap_origHints_secondaryPath_extraHandles_error_(False, None, None, None, None)
+		b = layer.fastBounds()
+		x0, y0, W, H = b.origin.x, b.origin.y, b.size.width, b.size.height
+		if W < 1 or H < 1:
+			return None
+
 		for i in range(N_LINES):
 			f = 0.06 + 0.88 * i / (N_LINES - 1)
 			y = y0 + f * H
