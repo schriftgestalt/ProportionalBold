@@ -25,8 +25,16 @@ import uuid
 
 from GlyphsApp import Glyphs, EDIT_MENU
 from GlyphsApp.plugins import GeneralPlugin
-from AppKit import (NSMenuItem, NSAlert, NSTextField, NSView, NSMakeRect, NSClassFromString,
-                    NSAlertFirstButtonReturn, NSFont)
+from AppKit import (
+	NSMenuItem,
+	NSAlert,
+	NSTextField,
+	NSView,
+	NSMakeRect,
+	NSClassFromString,
+	NSAlertFirstButtonReturn,
+	NSFont
+)
 
 DEFAULT_RATIO = 1.45        # suggested setting for Bold; suggested settings and measured designer ratios: README.md
 PCT = 30                    # percentile of scan-line ink runs used as the glyph's stem width
@@ -183,8 +191,10 @@ class ProportionalBold(GeneralPlugin):
 			if w is None:
 				if not fallbackStem:
 					b = work.bounds
-					raise NoStem("stem measurement returned nothing (bounds %.0f,%.0f %.0fx%.0f, %d paths)"
-								 % (b.origin.x, b.origin.y, b.size.width, b.size.height, len(work.paths)))
+					raise NoStem(
+						"stem measurement returned nothing (bounds %.0f,%.0f %.0fx%.0f, %d paths)"
+						% (b.origin.x, b.origin.y, b.size.width, b.size.height, len(work.paths))
+					)
 				w = float(fallbackStem)
 				fallback = True
 			d = (ratio - 1.0) / 2.0 * w
@@ -298,10 +308,12 @@ class ProportionalBold(GeneralPlugin):
 			if ratio is None:
 				return
 			r = self.emboldenFont(font, ratio)
-			msg = ("Master “%s” created in %.0f s.\n%d glyphs emboldened, %d unmeasurable glyphs given the median stem, %d empty skipped, %d failed.\n"
-				   "Median stem: %.0f → %.0f units (per-glyph offset = (ratio−1)/2 × own stem).\n"
-				   "This is a draft master: check junctions and dense glyphs, then edit as usual."
-				   % (r["master"], r["seconds"], r["done"], r["fallback"], r["skipped"], r["failed"], r["medianStem"], r["medianStemOut"]))
+			msg = (
+				"Master “%s” created in %.0f s.\n%d glyphs emboldened, %d unmeasurable glyphs given the median stem, %d empty skipped, %d failed.\n"
+				"Median stem: %.0f → %.0f units (per-glyph offset = (ratio−1)/2 × own stem).\n"
+				"This is a draft master: check junctions and dense glyphs, then edit as usual."
+				% (r["master"], r["seconds"], r["done"], r["fallback"], r["skipped"], r["failed"], r["medianStem"], r["medianStemOut"])
+			)
 			print("Proportional Bold: " + msg.replace("\n", " "))
 			Glyphs.showNotification("Proportional Bold", "Master “%s” created (%d glyphs)." % (r["master"], r["done"]))
 			alert = NSAlert.alloc().init()
