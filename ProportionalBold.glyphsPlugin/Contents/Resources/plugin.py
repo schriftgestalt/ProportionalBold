@@ -99,15 +99,13 @@ class ProportionalBold(GeneralPlugin):
 
 	# ------------------------------------------------------------------ measurement (vector)
 	@objc.python_method
-	def _cleanRuns(self, pts, axis, p1, p2):
+	def _cleanRuns(self, pts, axis):
 		"""pts: NSPoints returned by intersectionsBetweenPoints. Drop the measurement-line end points,
 		sort along the line, pair even-odd → ink run lengths."""
 		vals = []
-		for p in pts:
+		for p in pts[1:-1]:
 			v = p.x if axis == 0 else p.y
 			# drop the two end points of the measurement line itself
-			if (abs(p.x - p1[0]) < 1e-6 and abs(p.y - p1[1]) < 1e-6) or (abs(p.x - p2[0]) < 1e-6 and abs(p.y - p2[1]) < 1e-6):
-				continue
 			vals.append(v)
 		vals.sort()
 		n = len(vals) - (len(vals) % 2)
@@ -129,10 +127,10 @@ class ProportionalBold(GeneralPlugin):
 			f = 0.06 + 0.88 * i / (N_LINES - 1)
 			y = y0 + f * H
 			p1, p2 = (x0 - 10.0, y), (x0 + W + 10.0, y)
-			runs += self._cleanRuns(layer.intersectionsBetweenPoints(p1, p2), 0, p1, p2)
+			runs += self._cleanRuns(layer.intersectionsBetweenPoints(p1, p2), 0)
 			x = x0 + f * W
 			p1, p2 = (x, y0 - 10.0), (x, y0 + H + 10.0)
-			runs += self._cleanRuns(layer.intersectionsBetweenPoints(p1, p2), 1, p1, p2)
+			runs += self._cleanRuns(layer.intersectionsBetweenPoints(p1, p2), 1)
 		limit = MAX_RUN_FRAC * max(W, H)
 		runs = sorted(r for r in runs if 0 < r < limit)
 		if len(runs) < 6:
