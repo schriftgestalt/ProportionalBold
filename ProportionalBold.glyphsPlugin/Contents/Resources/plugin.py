@@ -233,11 +233,11 @@ class ProportionalBold(GeneralPlugin):
 				newMaster.axes[0] = round(src.axes[0] * ratio)
 		except Exception:
 			pass
+		font.disableUpdateInterface()
 		font.masters.append(newMaster)
 		newId = newMaster.id
 		done, skipped, failed, failures, stems = 0, 0, 0, [], []
 		deferred = []                      # (glyph, srcLayer) with no measurable stem: get the median afterwards
-		font.disableUpdateInterface()
 		try:
 			for i, glyph in enumerate(font.glyphs):
 				if glyphLimit and i >= glyphLimit:
