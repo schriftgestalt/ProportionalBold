@@ -115,14 +115,16 @@ class ProportionalBold(GeneralPlugin):
 		if W < 1 or H < 1:
 			return None
 		runs = []
+		layer = layer.copyDecomposedLayer()
+		layer.flattenOutlinesRemoveOverlap_origHints_secondaryPath_extraHandles_error_(False, None, None, None, None)
 		for i in range(N_LINES):
 			f = 0.06 + 0.88 * i / (N_LINES - 1)
 			y = y0 + f * H
 			p1, p2 = (x0 - 10.0, y), (x0 + W + 10.0, y)
-			runs += self._cleanRuns(layer.intersectionsBetweenPoints(p1, p2, components=True), 0, p1, p2)
+			runs += self._cleanRuns(layer.intersectionsBetweenPoints(p1, p2), 0, p1, p2)
 			x = x0 + f * W
 			p1, p2 = (x, y0 - 10.0), (x, y0 + H + 10.0)
-			runs += self._cleanRuns(layer.intersectionsBetweenPoints(p1, p2, components=True), 1, p1, p2)
+			runs += self._cleanRuns(layer.intersectionsBetweenPoints(p1, p2), 1, p1, p2)
 		limit = MAX_RUN_FRAC * max(W, H)
 		runs = sorted(r for r in runs if 0 < r < limit)
 		if len(runs) < 6:
